@@ -38,4 +38,17 @@ public class AdminEntity {
     private AdminType adminType;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate;
+
+    public AdminEntity(String firstName, String lastName, String employeeId, String email, String username,
+                       String password, String contactNumber, AdminType adminType, Date createdDate) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.employeeId = employeeId;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.contactNumber = contactNumber;
+        this.adminType = adminType;
+        this.createdDate = createdDate;
+    }
 }
