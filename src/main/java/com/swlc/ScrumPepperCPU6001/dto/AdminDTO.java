@@ -19,21 +19,23 @@ import java.util.Date;
 public class AdminDTO {
 
     private long id;
-    private String name;
+    private String firstName;
+    private String lastName;
     private String email;
     private String username;
-    private String mobileNumber;
-    private Date activatedDate;
+    private String contactNumber;
+    private Date createdDate;
 
     @Override
     public String toString() {
         return "AdminDTO{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
                 ", username='" + username + '\'' +
-                ", mobileNumber='" + mobileNumber + '\'' +
-                ", activatedDate=" + activatedDate +
+                ", contactNumber='" + contactNumber + '\'' +
+                ", createdDate=" + createdDate +
                 '}';
     }
 }

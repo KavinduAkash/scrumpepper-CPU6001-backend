@@ -33,11 +33,12 @@ public class AdminServiceImpl implements AdminService {
                 throw new AdminException(ApplicationConstant.RESOURCE_NOT_FOUND, "Admin not found");
             return new AdminDTO(
                     byUsername.get().getId(),
-                    byUsername.get().getName(),
+                    byUsername.get().getFirstName(),
+                    byUsername.get().getLastName(),
                     byUsername.get().getEmail(),
                     byUsername.get().getUsername(),
-                    byUsername.get().getMobileNumber(),
-                    byUsername.get().getActivatedDate()
+                    byUsername.get().getContactNumber(),
+                    byUsername.get().getCreatedDate()
             );
         } catch (Exception e) {
             log.error("Method getAdminDetailsByUserName : " + e.getMessage(), e);
