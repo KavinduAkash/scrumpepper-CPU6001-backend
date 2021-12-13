@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.controller.admin;
 
 import com.swlc.ScrumPepperCPU6001.dto.request.AddAdminRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateAdminRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.AdminService;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,16 @@ public class AdminController {
     public ResponseEntity addAdmin(@RequestBody AddAdminRequestDTO addAdminRequestDTO) {
         boolean result = adminService.addAdmin(addAdminRequestDTO);
         return new ResponseEntity<>(
-                new CommonResponseDTO(true, "Admin user create successfully", null),
+                new CommonResponseDTO(true, "Admin user created successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity updateAdmin(@RequestBody UpdateAdminRequestDTO updateAdminRequestDTO) {
+        boolean result = adminService.updateAdmin(updateAdminRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Admin user updated successfully", null),
                 HttpStatus.OK
         );
     }

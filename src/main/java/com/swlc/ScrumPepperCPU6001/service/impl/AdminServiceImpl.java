@@ -3,6 +3,7 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.AdminDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddAdminRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateAdminRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.AdminEntity;
 import com.swlc.ScrumPepperCPU6001.enums.AdminType;
 import com.swlc.ScrumPepperCPU6001.exception.AdminException;
@@ -61,7 +62,9 @@ public class AdminServiceImpl implements AdminService {
         try {
             Optional<AdminEntity> byUsername = adminRepository.findByUsername(addAdminRequestDTO.getUsername());
             Optional<AdminEntity> byEmail = adminRepository.findByEmail(addAdminRequestDTO.getEmail());
-            Optional<AdminEntity> byContactNumber = adminRepository.findByContactNumber(addAdminRequestDTO.getContactNumber());
+            Optional<AdminEntity> byContactNumber = adminRepository.findByContactNumber(
+                    addAdminRequestDTO.getContactNumber());
+            //check whether same user credentials
             if(byUsername.isPresent())
                 throw new AdminException(ApplicationConstant.RESOURCE_ALREADY_EXIST, "Username already exist");
             if(byEmail.isPresent())
@@ -84,6 +87,49 @@ public class AdminServiceImpl implements AdminService {
             return true;
         } catch (Exception e) {
             log.error("Method addAdmin : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean updateAdmin(UpdateAdminRequestDTO updateAdminRequestDTO) {
+        log.info("Execute method updateAdmin : updateAdminRequestDTO : " + updateAdminRequestDTO.toString());
+        try {
+            Optional<AdminEntity> byId = adminRepository.findById(updateAdminRequestDTO.getId());
+            Optional<AdminEntity> byUsername = adminRepository.findByUsername(updateAdminRequestDTO.getUsername());
+            Optional<AdminEntity> byEmail = adminRepository.findByEmail(updateAdminRequestDTO.getEmail());
+            Optional<AdminEntity> byContactNumber = adminRepository.findByContactNumber(
+                    updateAdminRequestDTO.getContactNumber());
+            if(!byId.isPresent())
+                throw new AdminException(ApplicationConstant.RESOURCE_NOT_FOUND, "Admin user not found");
+            AdminEntity adminEntity = byId.get();
+            //check whether same user credentials
+            if(byUsername.isPresent()) {
+                   if(adminEntity.getId() != byUsername.get().getId())
+                       throw new AdminException(ApplicationConstant.RESOURCE_ALREADY_EXIST, "Username already exist");
+            }
+            if(byEmail.isPresent()) {
+                if(adminEntity.getId() != byEmail.get().getId())
+                    throw new AdminException(ApplicationConstant.RESOURCE_ALREADY_EXIST, "Email already exist");
+            }
+            if(byContactNumber.isPresent()) {
+                if(adminEntity.getId() != byContactNumber.get().getId())
+                    throw new AdminException(ApplicationConstant.RESOURCE_ALREADY_EXIST, "Contact already exist");
+            }
+            adminEntity.setFirstName(updateAdminRequestDTO.getFirstName());
+            adminEntity.setLastName(updateAdminRequestDTO.getLastName());
+            adminEntity.setEmail(updateAdminRequestDTO.getEmail());
+            adminEntity.setEmployeeId(updateAdminRequestDTO.getEmployeeId());
+            adminEntity.setUsername(updateAdminRequestDTO.getUsername());
+            adminEntity.setContactNumber(updateAdminRequestDTO.getContactNumber());
+            adminEntity.setAdminType(updateAdminRequestDTO.getAdminType());
+            if(updateAdminRequestDTO.getPassword()!=null) {
+                adminEntity.setPassword(passwordEncoder.encode(updateAdminRequestDTO.getPassword()));
+            }
+            adminRepository.save(adminEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method updateAdmin : " + e.getMessage(), e);
             throw e;
         }
     }
