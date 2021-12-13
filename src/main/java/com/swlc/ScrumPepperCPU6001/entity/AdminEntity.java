@@ -27,7 +27,7 @@ public class AdminEntity {
     @Column(length = 255, nullable = false, unique = true)
     private String email;
     @Column(length = 255, nullable = false, unique = true)
-    private String userName;
+    private String username;
     @Column(length = 255, nullable = false)
     private String password;
     @Enumerated(EnumType.STRING)
