@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.dto.request;
 
 import com.swlc.ScrumPepperCPU6001.enums.AdminType;
+import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ public class AddAdminRequestDTO {
     private String contactNumber;
     private Date createdDate;
     private AdminType adminType;
+    private StatusType statusType;
 
     @Override
     public String toString() {
@@ -40,6 +42,7 @@ public class AddAdminRequestDTO {
                 ", contactNumber='" + contactNumber + '\'' +
                 ", createdDate=" + createdDate +
                 ", adminType=" + adminType +
+                ", statusType=" + statusType +
                 '}';
     }
 }
