@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swlc.ScrumPepperCPU6001.enums.AdminType;
+import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,9 +39,10 @@ public class AdminEntity {
     private AdminType adminType;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate;
+    @Enumerated(EnumType.STRING)
+    private StatusType statusType;
 
-    public AdminEntity(String firstName, String lastName, String employeeId, String email, String username,
-                       String password, String contactNumber, AdminType adminType, Date createdDate) {
+    public AdminEntity(String firstName, String lastName, String employeeId, String email, String username, String password, String contactNumber, AdminType adminType, Date createdDate, StatusType statusType) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.employeeId = employeeId;
@@ -50,5 +52,6 @@ public class AdminEntity {
         this.contactNumber = contactNumber;
         this.adminType = adminType;
         this.createdDate = createdDate;
+        this.statusType = statusType;
     }
 }
