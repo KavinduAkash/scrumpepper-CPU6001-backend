@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swlc.ScrumPepperCPU6001.enums.AdminType;
+import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +29,7 @@ public class AdminDTO {
     private String employeeId;
     private AdminType adminType;
     private Date createdDate;
-
+    private StatusType statusType;
 
     @Override
     public String toString() {
@@ -42,6 +43,7 @@ public class AdminDTO {
                 ", employeeId='" + employeeId + '\'' +
                 ", adminType=" + adminType +
                 ", createdDate=" + createdDate +
+                ", statusType=" + statusType +
                 '}';
     }
 }
