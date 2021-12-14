@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.dto.request;
 
 import com.swlc.ScrumPepperCPU6001.enums.AdminType;
+import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class UpdateAdminRequestDTO {
     private String password;
     private String contactNumber;
     private AdminType adminType;
+    private StatusType statusType;
 
     @Override
     public String toString() {
@@ -38,6 +40,7 @@ public class UpdateAdminRequestDTO {
                 ", password='" + password + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
                 ", adminType=" + adminType +
+                ", statusType=" + statusType +
                 '}';
     }
 }
