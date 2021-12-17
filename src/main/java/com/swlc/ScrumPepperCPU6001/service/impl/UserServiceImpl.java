@@ -54,4 +54,27 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
     }
+
+    @Override
+    public boolean checkDetailsEligibility(String action, String value) {
+        log.info("Execute method checkDetailsEligibility : value : " + value);
+        try {
+            switch (action) {
+                case "email":
+                    Optional<UserEntity> byEmail = userRepository.findByEmail(value);
+                    if(byEmail.isPresent())
+                        throw new UserException(ApplicationConstant.RESOURCE_ALREADY_EXIST, "This email already taken");
+                    break;
+                case "ref":
+                    Optional<UserEntity> byRefNo = userRepository.findByRefNo(value);
+                    if(byRefNo.isPresent())
+                        throw new UserException(ApplicationConstant.RESOURCE_ALREADY_EXIST, "This ref already taken");
+                    break;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Method checkDetailsEligibility : " + e.getMessage(), e);
+            throw e;
+        }
+    }
 }

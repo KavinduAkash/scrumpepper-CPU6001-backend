@@ -7,4 +7,5 @@ import com.swlc.ScrumPepperCPU6001.dto.request.AddUserRequestDTO;
  */
 public interface UserService {
     boolean registerNewUser(AddUserRequestDTO addUserRequestDTO);
+    boolean checkDetailsEligibility(String action, String value);
 }

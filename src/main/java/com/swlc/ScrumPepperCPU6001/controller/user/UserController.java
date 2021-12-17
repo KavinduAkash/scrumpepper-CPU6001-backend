@@ -31,4 +31,13 @@ public class UserController {
         );
     }
 
+    @PostMapping(value = "/check/{action}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity checkUserDetailsEligibility(@PathVariable String action, @RequestParam("val") String value) {
+        boolean result = userService.checkDetailsEligibility(action, value);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "", null),
+                HttpStatus.OK
+        );
+    }
+
 }
