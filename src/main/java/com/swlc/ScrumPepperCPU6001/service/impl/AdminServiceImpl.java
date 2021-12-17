@@ -148,7 +148,7 @@ public class AdminServiceImpl implements AdminService {
     public List<AdminDTO> getAllAdmins() {
         log.info("Execute method getAllAdmins : ");
         try {
-            List<AdminEntity> allNotDeletedAdmins = adminRepository.getAllNotDeletedAdmins();
+            List<AdminEntity> allNotDeletedAdmins = adminRepository.filerAdminByNotEqualStatusType(StatusType.DELETE);
             List<AdminDTO> allNotDeletedAdminDTOs =  new ArrayList<>();
             for (AdminEntity adminEntity : allNotDeletedAdmins) {
                 allNotDeletedAdminDTOs.add(
