@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.entity.AdminEntity;
+import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import com.swlc.ScrumPepperCPU6001.repository.AdminRepository;
 import com.swlc.ScrumPepperCPU6001.service.Oauth2UserService;
 import lombok.extern.log4j.Log4j2;
@@ -35,6 +36,7 @@ public class Oauth2UserServiceImpl implements Oauth2UserService, UserDetailsServ
         try {
             Optional<AdminEntity> byUsername = adminRepository.findByUsername(s);
             if(!byUsername.isPresent()) throw new RuntimeException();
+            if(byUsername.get().getStatusType().equals(StatusType.DELETE)) throw new RuntimeException();
             return new org.springframework.security.core.userdetails.User(byUsername.get().getUsername(), byUsername.get().getPassword(),
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
         } catch (Exception e) {
