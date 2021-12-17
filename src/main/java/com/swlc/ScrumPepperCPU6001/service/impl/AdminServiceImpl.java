@@ -85,7 +85,7 @@ public class AdminServiceImpl implements AdminService {
                             passwordEncoder.encode(addAdminRequestDTO.getPassword()),
                             addAdminRequestDTO.getContactNumber(),
                             addAdminRequestDTO.getAdminType(),
-                            addAdminRequestDTO.getCreatedDate(),
+                            new Date(),
                             StatusType.ACTIVE
                     )
             );
