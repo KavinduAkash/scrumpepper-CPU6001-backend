@@ -40,6 +40,18 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private StatusType statusType;
 
+    public UserEntity(String refNo, String firstName, String lastName, String contactNumber, String email,
+                      String password, Date createdDate, StatusType statusType) {
+        this.refNo = refNo;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.contactNumber = contactNumber;
+        this.email = email;
+        this.password = password;
+        this.createdDate = createdDate;
+        this.statusType = statusType;
+    }
+
     @Override
     public String toString() {
         return "UserEntity{" +
