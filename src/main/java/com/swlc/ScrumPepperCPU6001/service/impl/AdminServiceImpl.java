@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -139,6 +140,35 @@ public class AdminServiceImpl implements AdminService {
             return true;
         } catch (Exception e) {
             log.error("Method updateAdmin : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<AdminDTO> getAllAdmins() {
+        log.info("Execute method getAllAdmins : ");
+        try {
+            List<AdminEntity> allNotDeletedAdmins = adminRepository.getAllNotDeletedAdmins();
+            List<AdminDTO> allNotDeletedAdminDTOs =  new ArrayList<>();
+            for (AdminEntity adminEntity : allNotDeletedAdmins) {
+                allNotDeletedAdminDTOs.add(
+                        new AdminDTO(
+                                adminEntity.getId(),
+                                adminEntity.getFirstName(),
+                                adminEntity.getLastName(),
+                                adminEntity.getEmail(),
+                                adminEntity.getUsername(),
+                                adminEntity.getContactNumber(),
+                                adminEntity.getEmployeeId(),
+                                adminEntity.getAdminType(),
+                                adminEntity.getCreatedDate(),
+                                adminEntity.getStatusType()
+                        )
+                );
+            }
+            return allNotDeletedAdminDTOs;
+        } catch (Exception e) {
+            log.error("Method getAllAdmins : " + e.getMessage(), e);
             throw e;
         }
     }

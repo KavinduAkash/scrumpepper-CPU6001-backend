@@ -13,4 +13,5 @@ public interface AdminService {
     AdminDTO getAdminDetailsByUserName(String username);
     boolean addAdmin(AddAdminRequestDTO addAdminRequestDTO);
     boolean updateAdmin(UpdateAdminRequestDTO updateAdminRequestDTO);
+    List<AdminDTO> getAllAdmins();
 }
