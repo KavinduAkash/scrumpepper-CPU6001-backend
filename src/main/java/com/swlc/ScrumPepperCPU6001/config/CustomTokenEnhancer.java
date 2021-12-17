@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.config;
 
 import com.swlc.ScrumPepperCPU6001.dto.AdminDTO;
 import com.swlc.ScrumPepperCPU6001.service.AdminService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -22,6 +23,7 @@ public class CustomTokenEnhancer extends JwtAccessTokenConverter {
 
     private final AdminService adminService;
 
+    @Autowired
     public CustomTokenEnhancer(AdminService adminService) {
         this.adminService = adminService;
     }
