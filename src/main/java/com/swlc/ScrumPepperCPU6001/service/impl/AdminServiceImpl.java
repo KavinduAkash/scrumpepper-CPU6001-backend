@@ -6,6 +6,7 @@ import com.swlc.ScrumPepperCPU6001.dto.request.AddAdminRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateAdminRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.AdminEntity;
 import com.swlc.ScrumPepperCPU6001.enums.AdminType;
+import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import com.swlc.ScrumPepperCPU6001.exception.AdminException;
 import com.swlc.ScrumPepperCPU6001.repository.AdminRepository;
 import com.swlc.ScrumPepperCPU6001.service.AdminService;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,7 +50,8 @@ public class AdminServiceImpl implements AdminService {
                     byUsername.get().getContactNumber(),
                     byUsername.get().getEmployeeId(),
                     byUsername.get().getAdminType(),
-                    byUsername.get().getCreatedDate()
+                    byUsername.get().getCreatedDate(),
+                    byUsername.get().getStatusType()
             );
         } catch (Exception e) {
             log.error("Method getAdminDetailsByUserName : " + e.getMessage(), e);
@@ -81,7 +84,8 @@ public class AdminServiceImpl implements AdminService {
                             passwordEncoder.encode(addAdminRequestDTO.getPassword()),
                             addAdminRequestDTO.getContactNumber(),
                             addAdminRequestDTO.getAdminType(),
-                            addAdminRequestDTO.getCreatedDate()
+                            addAdminRequestDTO.getCreatedDate(),
+                            StatusType.ACTIVE
                     )
             );
             return true;
@@ -103,6 +107,10 @@ public class AdminServiceImpl implements AdminService {
             if(!byId.isPresent())
                 throw new AdminException(ApplicationConstant.RESOURCE_NOT_FOUND, "Admin user not found");
             AdminEntity adminEntity = byId.get();
+            //check user status
+            if(adminEntity.getStatusType().equals(StatusType.DELETE)) {
+                throw new AdminException(ApplicationConstant.RESOURCE_NOT_FOUND, "Admin user not found");
+            }
             //check whether same user credentials
             if(byUsername.isPresent()) {
                    if(adminEntity.getId() != byUsername.get().getId())
@@ -123,6 +131,7 @@ public class AdminServiceImpl implements AdminService {
             adminEntity.setUsername(updateAdminRequestDTO.getUsername());
             adminEntity.setContactNumber(updateAdminRequestDTO.getContactNumber());
             adminEntity.setAdminType(updateAdminRequestDTO.getAdminType());
+            adminEntity.setStatusType(updateAdminRequestDTO.getStatusType());
             if(updateAdminRequestDTO.getPassword()!=null) {
                 adminEntity.setPassword(passwordEncoder.encode(updateAdminRequestDTO.getPassword()));
             }
