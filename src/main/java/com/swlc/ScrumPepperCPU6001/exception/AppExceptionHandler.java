@@ -23,4 +23,10 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(
                 new ErrorMessageResponseDTO(false, ex.getStatus(), ex.getMsg()), HttpStatus.OK);
     }
+
+    @ExceptionHandler(value = {UserException.class})
+    ResponseEntity<ErrorMessageResponseDTO> handleAdminException(UserException ex, WebRequest webRequest) {
+        return new ResponseEntity<>(
+                new ErrorMessageResponseDTO(false, ex.getStatus(), ex.getMsg()), HttpStatus.OK);
+    }
 }
