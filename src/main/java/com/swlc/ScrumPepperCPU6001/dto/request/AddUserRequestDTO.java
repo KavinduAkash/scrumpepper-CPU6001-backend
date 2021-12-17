@@ -16,6 +16,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddUserRequestDTO {
+    private String ref;
     private String firstName;
     private String lastName;
     private String contactNumber;
@@ -25,7 +26,8 @@ public class AddUserRequestDTO {
     @Override
     public String toString() {
         return "AddUserRequestDTO{" +
-                "firstName='" + firstName + '\'' +
+                "ref='" + ref + '\'' +
+                ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
                 ", email='" + email + '\'' +
