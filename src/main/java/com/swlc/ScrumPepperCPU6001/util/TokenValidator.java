@@ -61,6 +61,9 @@ public class TokenValidator {
                 if (!userEntityOptional.isPresent()) {
                     throw new UserException(ApplicationConstant.RESOURCE_NOT_FOUND, "User account not found");
                 }
+                if(userEntityOptional.get().getStatusType().equals(StatusType.DELETE)) {
+                    throw new UserException(ApplicationConstant.RESOURCE_NOT_FOUND, "User account not found");
+                }
                 return userEntityOptional.get();
             }
             throw new UserException(ApplicationConstant.RESOURCE_NOT_FOUND, "Unable to find user details");
