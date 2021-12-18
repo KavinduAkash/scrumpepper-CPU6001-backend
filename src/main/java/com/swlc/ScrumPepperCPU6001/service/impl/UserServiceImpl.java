@@ -8,6 +8,7 @@ import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import com.swlc.ScrumPepperCPU6001.exception.UserException;
 import com.swlc.ScrumPepperCPU6001.repository.UserRepository;
 import com.swlc.ScrumPepperCPU6001.service.UserService;
+import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private TokenValidator tokenValidator;
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -98,6 +101,20 @@ public class UserServiceImpl implements UserService {
             return true;
         } catch (Exception e) {
             log.error("Method UpdateUserRequestDTO : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean deleteUser() {
+        log.info("Execute method deleteUser : ");
+        try {
+            UserEntity userEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            userEntity.setStatusType(StatusType.DELETE);
+            userRepository.save(userEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method deleteUser : " + e.getMessage(), e);
             throw e;
         }
     }

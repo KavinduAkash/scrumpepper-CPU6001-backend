@@ -4,6 +4,7 @@ import com.swlc.ScrumPepperCPU6001.dto.request.AddUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.UserService;
+import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,15 @@ public class UserController {
         boolean result = userService.updateUser(updateUserRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your account updated successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity deleteUser() {
+        boolean result = userService.deleteUser();
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Your account deleted successfully", null),
                 HttpStatus.OK
         );
     }

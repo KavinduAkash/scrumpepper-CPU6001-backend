@@ -10,4 +10,5 @@ public interface UserService {
     boolean registerNewUser(AddUserRequestDTO addUserRequestDTO);
     boolean checkDetailsEligibility(String action, String value);
     boolean updateUser(UpdateUserRequestDTO updateUserRequestDTO);
+    boolean deleteUser();
 }
