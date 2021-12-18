@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.UserEntity;
 import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import com.swlc.ScrumPepperCPU6001.exception.UserException;
@@ -74,6 +75,29 @@ public class UserServiceImpl implements UserService {
             return true;
         } catch (Exception e) {
             log.error("Method checkDetailsEligibility : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean updateUser(UpdateUserRequestDTO updateUserRequestDTO) {
+        log.info("Execute method UpdateUserRequestDTO : updateUserRequestDTO : " + updateUserRequestDTO.toString());
+        try {
+            Optional<UserEntity> byId = userRepository.findById(updateUserRequestDTO.getId());
+            if(!byId.isPresent())
+                throw new UserException(ApplicationConstant.RESOURCE_NOT_FOUND, "User account not found");
+            UserEntity userEntity = byId.get();
+            userEntity.setFirstName(updateUserRequestDTO.getFirstName());
+            userEntity.setLastName(updateUserRequestDTO.getLastName());
+            userEntity.setRefNo(updateUserRequestDTO.getRefNo());
+            userEntity.setContactNumber(updateUserRequestDTO.getContactNumber());
+            userEntity.setStatusType(updateUserRequestDTO.getStatusType());
+            if(updateUserRequestDTO.getPassword()!=null)
+                userEntity.setPassword( passwordEncoder.encode(updateUserRequestDTO.getPassword()));
+            userRepository.save(userEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method UpdateUserRequestDTO : " + e.getMessage(), e);
             throw e;
         }
     }

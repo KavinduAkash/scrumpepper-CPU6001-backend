@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,15 @@ public class UserController {
         boolean result = userService.checkDetailsEligibility(action, value);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "", null),
+                HttpStatus.OK
+        );
+    }
+
+    @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity updateUser(@RequestBody UpdateUserRequestDTO updateUserRequestDTO) {
+        boolean result = userService.updateUser(updateUserRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Your account updated successfully", null),
                 HttpStatus.OK
         );
     }
