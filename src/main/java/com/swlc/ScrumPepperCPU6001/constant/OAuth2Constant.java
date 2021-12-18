@@ -4,6 +4,7 @@ package com.swlc.ScrumPepperCPU6001.constant;
  * @author hp
  */
 public class OAuth2Constant {
+    public static final String USER_CLIENT_ID = "USER";
     public static final String ADMIN_CLIENT_ID = "ADMIN";
     public static final String CLIENT_SECRET = "";
     public static final String GRANT_TYPE_PASSWORD = "password";
