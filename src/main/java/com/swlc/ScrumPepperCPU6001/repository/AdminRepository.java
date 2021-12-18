@@ -21,4 +21,5 @@ public interface AdminRepository extends JpaRepository<AdminEntity, Long> {
     Optional<AdminEntity> findByContactNumber(String contactNumber);
     @Query(value = NativeQueryConstant.FILTER_ADMIN_BY_NOT_EQUAL_STATUS, nativeQuery = true)
     List<AdminEntity> filerAdminByNotEqualStatusType(StatusType statusType);
+    Optional<AdminEntity> findByUsernameAndStatusType(String username, StatusType statusType);
 }
