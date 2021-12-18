@@ -38,6 +38,7 @@ public class CorporateServiceImpl implements CorporateService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public boolean createNewCorporate(AddCorporateRequestDTO addCorporateRequestDTO) {
         log.info("Execute method createNewCorporate : addCorporateRequestDTO : " + addCorporateRequestDTO.toString());
         try {
