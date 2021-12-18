@@ -8,8 +8,6 @@ import com.swlc.ScrumPepperCPU6001.exception.AdminException;
 import com.swlc.ScrumPepperCPU6001.exception.UserException;
 import com.swlc.ScrumPepperCPU6001.repository.AdminRepository;
 import com.swlc.ScrumPepperCPU6001.repository.UserRepository;
-import com.swlc.ScrumPepperCPU6001.service.AdminService;
-import com.swlc.ScrumPepperCPU6001.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
