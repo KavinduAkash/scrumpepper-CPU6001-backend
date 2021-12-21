@@ -14,12 +14,14 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AddCorporateEmployeeRequestDTO {
     private long userId;
+    private long corporateId;
     private String email;
 
     @Override
     public String toString() {
         return "AddCorporateEmployeeRequestDTO{" +
                 "userId=" + userId +
+                ", corporateId=" + corporateId +
                 ", email='" + email + '\'' +
                 '}';
     }
