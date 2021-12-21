@@ -1,12 +1,15 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
+import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEntity;
 import com.swlc.ScrumPepperCPU6001.entity.UserEntity;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
 import com.swlc.ScrumPepperCPU6001.enums.StatusType;
+import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.repository.CorporateEmployeeRepository;
 import com.swlc.ScrumPepperCPU6001.repository.CorporateRepository;
 import com.swlc.ScrumPepperCPU6001.service.CorporateService;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * @author hp
@@ -68,6 +72,44 @@ public class CorporateServiceImpl implements CorporateService {
             return true;
         } catch (Exception e) {
             log.error("Method createNewCorporate : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean updateCorporate(UpdateCorporateRequestDTO updateCorporateRequestDTO) {
+        log.info("Execute method updateCorporate : updateCorporateRequestDTO : " + updateCorporateRequestDTO.toString());
+        try {
+            UserEntity userEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEntity> corporateById = corporateRepository.findById(updateCorporateRequestDTO.getId());
+            if(!corporateById.isPresent())
+                throw new CorporateException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate account not found");
+            CorporateEntity corporateEntity = corporateById.get();
+            Optional<CorporateEmployeeEntity> corporateSuperAdminOptional =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndCorporateAccessTypeAndStatusType(
+                    userEntity,
+                    corporateEntity,
+                    CorporateAccessType.CORPORATE_SUPER,
+                    CorporateAccessStatusType.ACTIVE
+            );
+            if(!corporateSuperAdminOptional.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            String corporateLogoPath = "";
+            corporateEntity.setName(updateCorporateRequestDTO.getName());
+            corporateEntity.setAddress(updateCorporateRequestDTO.getAddress());
+            corporateEntity.setContactNumber1(updateCorporateRequestDTO.getContactNumber1());
+            corporateEntity.setContactNumber2(updateCorporateRequestDTO.getContactNumber2());
+            corporateEntity.setEmail(updateCorporateRequestDTO.getEmail());
+            corporateEntity.setStatusType(updateCorporateRequestDTO.getStatusType());
+            if(updateCorporateRequestDTO.getCorporateLogo()!=null)
+                corporateEntity.setCorporateLogo(corporateLogoPath);
+            corporateRepository.save(corporateEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method updateCorporate : " + e.getMessage(), e);
             throw e;
         }
     }

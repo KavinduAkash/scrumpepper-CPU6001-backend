@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.CorporateService;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,15 @@ public class CorporateController {
         boolean result = corporateService.createNewCorporate(addCorporateRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your corporate account created successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity createCorporate(@ModelAttribute UpdateCorporateRequestDTO updateCorporateRequestDTO) {
+        boolean result = corporateService.updateCorporate(updateCorporateRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Your corporate account updated successfully", null),
                 HttpStatus.OK
         );
     }
