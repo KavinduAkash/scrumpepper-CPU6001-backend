@@ -34,16 +34,22 @@ public class CorporateEmployeeEntity {
     private CorporateAccessType corporateAccessType;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date acceptedDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date modifiedDate;
     @Enumerated(EnumType.STRING)
     private CorporateAccessStatusType statusType;
 
     public CorporateEmployeeEntity(UserEntity userEntity, CorporateEntity corporateEntity,
-                                   CorporateAccessType corporateAccessType, Date createdDate,
-                                   CorporateAccessStatusType statusType) {
+                                   CorporateAccessType corporateAccessType, Date createdDate, Date acceptedDate,
+                                   Date modifiedDate, CorporateAccessStatusType statusType) {
         this.userEntity = userEntity;
         this.corporateEntity = corporateEntity;
         this.corporateAccessType = corporateAccessType;
         this.createdDate = createdDate;
+        this.acceptedDate = acceptedDate;
+        this.modifiedDate = modifiedDate;
         this.statusType = statusType;
     }
 
@@ -55,6 +61,8 @@ public class CorporateEmployeeEntity {
                 ", corporateEntity=" + corporateEntity +
                 ", corporateAccessType=" + corporateAccessType +
                 ", createdDate=" + createdDate +
+                ", acceptedDate=" + acceptedDate +
+                ", modifiedDate=" + modifiedDate +
                 ", statusType=" + statusType +
                 '}';
     }
