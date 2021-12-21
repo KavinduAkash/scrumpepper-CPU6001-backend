@@ -122,7 +122,7 @@
 			<version>2.3.7</version>
 		</dependency>
 
-		!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail -->
+		<!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail -->
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
