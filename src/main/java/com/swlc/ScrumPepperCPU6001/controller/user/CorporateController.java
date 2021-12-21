@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.DeleteCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.CorporateService;
@@ -37,6 +38,15 @@ public class CorporateController {
         boolean result = corporateService.updateCorporate(updateCorporateRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your corporate account updated successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @DeleteMapping(value = "/remove", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity deleteCorporate(@RequestBody DeleteCorporateRequestDTO deleteCorporateRequestDTO) {
+        boolean result = corporateService.deleteCorporate(deleteCorporateRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Your corporate account deleted successfully", null),
                 HttpStatus.OK
         );
     }

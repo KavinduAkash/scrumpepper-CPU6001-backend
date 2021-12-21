@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.DeleteCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEntity;
@@ -110,6 +111,36 @@ public class CorporateServiceImpl implements CorporateService {
             return true;
         } catch (Exception e) {
             log.error("Method updateCorporate : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean deleteCorporate(DeleteCorporateRequestDTO deleteCorporateRequestDTO) {
+        log.info("Execute method deleteCorporate : corporateId : " + deleteCorporateRequestDTO.getId());
+        try {
+            UserEntity userEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEntity> corporateById = corporateRepository.findById(deleteCorporateRequestDTO.getId());
+            if(!corporateById.isPresent())
+                throw new CorporateException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate account not found");
+            CorporateEntity corporateEntity = corporateById.get();
+            Optional<CorporateEmployeeEntity> corporateSuperAdminOptional =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndCorporateAccessTypeAndStatusType(
+                            userEntity,
+                            corporateEntity,
+                            CorporateAccessType.CORPORATE_SUPER,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!corporateSuperAdminOptional.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            corporateEntity.setStatusType(StatusType.DELETE);
+            corporateRepository.save(corporateEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method deleteCorporate : " + e.getMessage(), e);
             throw e;
         }
     }
