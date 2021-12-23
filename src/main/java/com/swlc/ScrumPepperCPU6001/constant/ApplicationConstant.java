@@ -4,7 +4,7 @@ package com.swlc.ScrumPepperCPU6001.constant;
  * @author hp
  */
 public class ApplicationConstant {
-
+    public static final String API_BASE_URL = "/v1";
     /**
      * Exception error message constants
      */
