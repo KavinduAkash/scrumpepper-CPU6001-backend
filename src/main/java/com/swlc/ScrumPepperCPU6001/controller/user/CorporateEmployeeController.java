@@ -1,0 +1,34 @@
+package com.swlc.ScrumPepperCPU6001.controller.user;
+
+import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.service.CorporateEmployeeService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * @author hp
+ */
+@RestController
+@CrossOrigin
+@RequestMapping("v1/corporate/employee")
+public class CorporateEmployeeController {
+
+    private final CorporateEmployeeService corporateEmployeeService;
+
+    public CorporateEmployeeController(CorporateEmployeeService corporateEmployeeService) {
+        this.corporateEmployeeService = corporateEmployeeService;
+    }
+
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity createCorporate(@RequestBody AddCorporateEmployeeRequestDTO addCorporateEmployeeRequestDTO) {
+        boolean b = corporateEmployeeService.addCorporateEmployee(addCorporateEmployeeRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Your corporate employee added successfully", null),
+                HttpStatus.OK
+        );
+    }
+}

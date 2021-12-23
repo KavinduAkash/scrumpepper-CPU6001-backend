@@ -67,6 +67,8 @@ public class CorporateServiceImpl implements CorporateService {
                             corporateEntity,
                             CorporateAccessType.CORPORATE_SUPER,
                             new Date(),
+                            new Date(),
+                            new Date(),
                             CorporateAccessStatusType.ACTIVE
                     )
             );
