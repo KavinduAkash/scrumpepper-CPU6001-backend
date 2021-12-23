@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
+import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.UserEntity;
@@ -32,6 +33,29 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    @Override
+    public UserDTO getUserDetailsByEmail(String email) {
+        log.info("Execute method getUserDetailsByEmail : email : " + email);
+        try {
+            Optional<UserEntity> byEmail = userRepository.findByEmail(email);
+            if(!byEmail.isPresent()) throw new UserException(ApplicationConstant.RESOURCE_NOT_FOUND, "User not found");
+            return new UserDTO(
+                    byEmail.get().getId(),
+                    byEmail.get().getRefNo(),
+                    byEmail.get().getFirstName(),
+                    byEmail.get().getLastName(),
+                    byEmail.get().getContactNumber(),
+                    byEmail.get().getEmail(),
+                    null,
+                    null,
+                    byEmail.get().getStatusType()
+            );
+        } catch (Exception e) {
+            log.error("Method getUserDetailsByEmail : " + e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
