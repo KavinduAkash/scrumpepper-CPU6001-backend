@@ -32,9 +32,9 @@ public class ResourceServerConfigurer extends ResourceServerConfigurerAdapter {
                 .permitAll()
                 .antMatchers(HttpMethod.POST, ApplicationConstant.API_BASE_URL + "/user/check/{action}")
                 .permitAll()
-                .antMatchers(HttpMethod.POST, ApplicationConstant.API_BASE_URL + "/user/update")
+                .antMatchers(HttpMethod.PUT, ApplicationConstant.API_BASE_URL + "/user/update")
                 .access("hasAnyRole('ROLE_USER')")
-                .antMatchers(HttpMethod.POST, ApplicationConstant.API_BASE_URL + "/user/delete")
+                .antMatchers(HttpMethod.DELETE, ApplicationConstant.API_BASE_URL + "/user/delete")
                 .access("hasAnyRole('ROLE_USER')")
                 .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
     }
