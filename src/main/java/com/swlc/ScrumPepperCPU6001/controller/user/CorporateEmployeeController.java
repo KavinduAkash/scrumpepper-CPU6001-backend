@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.ApproveRejectInvitationRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.CorporateEmployeeService;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,18 @@ public class CorporateEmployeeController {
         boolean b = corporateEmployeeService.addCorporateEmployee(addCorporateEmployeeRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your corporate employee added successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping(value = "/approve", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity approveRejectCorporateEmployeeInvitations(@RequestBody ApproveRejectInvitationRequestDTO approveRejectInvitationRequestDTO) {
+        boolean b = corporateEmployeeService.approveRejectCorporateEmployeeInvitation(approveRejectInvitationRequestDTO);
+        String msg = "rejected";
+        if(approveRejectInvitationRequestDTO.getInvitationStatus().equals("ACCEPTED"))
+            msg = "accepted";
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "You " + msg + " the invitation successfully", null),
                 HttpStatus.OK
         );
     }

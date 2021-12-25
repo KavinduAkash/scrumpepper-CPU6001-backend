@@ -3,6 +3,7 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.constant.EmailTextConstant;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.ApproveRejectInvitationRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeInvitationEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEntity;
@@ -130,6 +131,49 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
             );
         } catch (Exception e) {
             log.error("Method addCorporateEmployee : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean approveRejectCorporateEmployeeInvitation(ApproveRejectInvitationRequestDTO approveRejectInvitationRequestDTO) {
+        log.info("Execute method approveRejectCorporateEmployeeInvitation : approveRejectInvitationRequestDTO : " +
+                approveRejectInvitationRequestDTO.toString());
+        try {
+            UserEntity userEntityToken = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeInvitationEntity> invitationById =
+                    corporateEmployeeInvitationRepository.findById(approveRejectInvitationRequestDTO.getInvitationId());
+            if(!invitationById.isPresent())
+                throw new CorporateEmployeeException(
+                        ApplicationConstant.RESOURCE_NOT_FOUND,
+                        "Corporate employee invitation not found"
+                );
+            CorporateEmployeeInvitationEntity corporateEmployeeInvitationEntity = invitationById.get();
+            CorporateEmployeeEntity corporateEmployeeEntity =
+                    corporateEmployeeInvitationEntity.getCorporateEmployeeEntity();
+            UserEntity userEntity = corporateEmployeeEntity.getUserEntity();
+            if(userEntityToken.getId()!=userEntity.getId())
+                throw new CorporateEmployeeException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action"
+                );
+            switch (approveRejectInvitationRequestDTO.getInvitationStatus()) {
+                case "ACCEPTED":
+                    corporateEmployeeInvitationEntity.setStatusType(CorporateEmployeeInvitationStatusType.ACCEPTED);
+                    corporateEmployeeEntity.setAcceptedDate(new Date());
+                    corporateEmployeeEntity.setStatusType(CorporateAccessStatusType.ACTIVE);
+                    break;
+                case "REJECT":
+                    corporateEmployeeInvitationEntity.setStatusType(CorporateEmployeeInvitationStatusType.REJECT);
+                    corporateEmployeeEntity.setAcceptedDate(new Date());
+                    corporateEmployeeEntity.setStatusType(CorporateAccessStatusType.INACTIVE);
+                    break;
+            }
+            corporateEmployeeInvitationRepository.save(corporateEmployeeInvitationEntity);
+            corporateEmployeeRepository.save(corporateEmployeeEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method approveRejectCorporateEmployeeInvitation : " + e.getMessage(), e);
             throw e;
         }
     }
