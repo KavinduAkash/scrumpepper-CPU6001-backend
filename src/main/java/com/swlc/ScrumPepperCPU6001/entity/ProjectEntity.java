@@ -41,6 +41,22 @@ public class ProjectEntity {
     @Column
     private ProjectStatusType statusType;
 
+    public ProjectEntity(CorporateEntity corporateEntity,
+                         String projectName,
+                         Date createdDate,
+                         Date modifiedDate,
+                         CorporateEmployeeEntity created_CorporateEmployeeEntity,
+                         CorporateEmployeeEntity modified_CorporateEmployeeEntity,
+                         ProjectStatusType statusType) {
+        this.corporateEntity = corporateEntity;
+        this.projectName = projectName;
+        this.createdDate = createdDate;
+        this.modifiedDate = modifiedDate;
+        this.created_CorporateEmployeeEntity = created_CorporateEmployeeEntity;
+        this.modified_CorporateEmployeeEntity = modified_CorporateEmployeeEntity;
+        this.statusType = statusType;
+    }
+
     @Override
     public String toString() {
         return "ProjectEntity{" +
