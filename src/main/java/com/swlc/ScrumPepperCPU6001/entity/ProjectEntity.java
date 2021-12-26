@@ -38,7 +38,7 @@ public class ProjectEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="modified_corporate_employee_id")
     private CorporateEmployeeEntity modified_CorporateEmployeeEntity;
-    @Column
+    @Enumerated(EnumType.STRING)
     private ProjectStatusType statusType;
 
     public ProjectEntity(CorporateEntity corporateEntity,
