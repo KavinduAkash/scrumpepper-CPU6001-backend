@@ -43,4 +43,13 @@ public class ProjectMemberController {
                 HttpStatus.OK
         );
     }
+
+    @DeleteMapping(value = "/remove", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity removeProjectMember(@RequestParam long id) {
+        boolean b = projectMemberService.removeProjectMember(id);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project member removed successfully", null),
+                HttpStatus.OK
+        );
+    }
 }

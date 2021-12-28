@@ -171,4 +171,59 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             throw e;
         }
     }
+
+    @Override
+    public boolean removeProjectMember(long projectMemberId) {
+        log.info("Execute method removeProjectMember : projectMemberId : " + projectMemberId);
+        try {
+            Optional<ProjectMemberEntity> projectMemberById =
+                    projectMemberRepository.findById(projectMemberId);
+            if(!projectMemberById.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project member not found");
+            ProjectMemberEntity projectMemberEntity = projectMemberById.get();
+            CorporateEmployeeEntity corporateEmployeeMemberEntity = projectMemberEntity.getCorporateEmployeeEntity();
+            ProjectEntity projectEntity = projectMemberEntity.getProjectEntity();
+            CorporateEntity corporateEntity = corporateEmployeeMemberEntity.getCorporateEntity();
+
+            //action auth
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                        projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                projectEntity,
+                                auth_user_admin.get()
+                        );
+                if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+                ProjectMemberEntity authProjectMemberEntity = byProjectEntityAndCorporateEmployeeEntity.get();
+                if(!(authProjectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER) ||
+                        authProjectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER)))
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+            }
+            projectMemberEntity.setStatusType(ProjectMemberStatusType.DELETE);
+            projectMemberRepository.save(projectMemberEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method removeProjectMember : " + e.getMessage(), e);
+            throw e;
+        }
+    }
 }
