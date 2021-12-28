@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.ProjectMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,15 @@ public class ProjectMemberController {
         boolean b = projectMemberService.addProjectMembers(addProjectMemberDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Project member added successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping(value = "/update", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity updateProjectMember(@RequestBody UpdateProjectMemberDTO updateProjectMemberDTO) {
+        boolean b = projectMemberService.updateProjectMember(updateProjectMemberDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project member updated successfully", null),
                 HttpStatus.OK
         );
     }
