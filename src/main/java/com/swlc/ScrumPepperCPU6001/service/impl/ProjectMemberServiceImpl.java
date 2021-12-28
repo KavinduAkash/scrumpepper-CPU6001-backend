@@ -6,6 +6,7 @@ import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
+import com.swlc.ScrumPepperCPU6001.enums.ProjectMemberStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.ScrumRoles;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateEmployeeException;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
@@ -100,7 +101,8 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
                             new Date(),
                             auth_user_admin.get(),
                             auth_user_admin.get(),
-                            addProjectMemberDTO.getScrumRole()
+                            addProjectMemberDTO.getScrumRole(),
+                            ProjectMemberStatusType.ACTIVE
                     )
             );
             return true;
