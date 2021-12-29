@@ -62,7 +62,7 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
         log.info("Execute method addCorporateEmployee : addCorporateEmployeeRequestDTO : " + addCorporateEmployeeRequestDTO.toString());
         try {
             Optional<CorporateEntity> corporateById = corporateRepository.findById(addCorporateEmployeeRequestDTO.getCorporateId());
-            if(corporateById.isPresent())
+            if(!corporateById.isPresent())
                 throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND,
                         "Corporate account not found");
             CorporateEntity corporateEntity = corporateById.get();
