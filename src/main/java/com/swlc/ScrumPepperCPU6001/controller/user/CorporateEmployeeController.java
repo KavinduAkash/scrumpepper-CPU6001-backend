@@ -24,7 +24,7 @@ public class CorporateEmployeeController {
         this.corporateEmployeeService = corporateEmployeeService;
     }
 
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity createCorporate(@RequestBody AddCorporateEmployeeRequestDTO addCorporateEmployeeRequestDTO) {
         boolean b = corporateEmployeeService.addCorporateEmployee(addCorporateEmployeeRequestDTO);
         return new ResponseEntity<>(
