@@ -118,18 +118,12 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
                     corporateEntity.getName(),
                     userEntity.getFirstName() + " " + userEntity.getLastName()
             );
-            emailSender.sendCorporateInvitations(
+            emailSender.sendCorporateInvitations2(
                     userEntity.getEmail(),
                     "You have corporate joining invitation",
                     corporateInvitationTemplate
             );
             return true;
-        } catch (MessagingException ex) {
-            log.error("Method addCorporateEmployee : " + ex.getMessage(), ex);
-            throw new CorporateEmployeeException(
-                    ApplicationConstant.UNABLE_TO_SEND_EMAIL,
-                    "Unable to send corporate joining invitation email"
-            );
         } catch (Exception e) {
             log.error("Method addCorporateEmployee : " + e.getMessage(), e);
             throw e;
