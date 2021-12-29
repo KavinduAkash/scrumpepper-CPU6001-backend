@@ -58,6 +58,7 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public boolean addCorporateEmployee(AddCorporateEmployeeRequestDTO addCorporateEmployeeRequestDTO) {
         log.info("Execute method addCorporateEmployee : addCorporateEmployeeRequestDTO : " + addCorporateEmployeeRequestDTO.toString());
         try {
@@ -78,8 +79,8 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
                         "Unauthorized action. You can't processed this action"
                 );
             CorporateEmployeeEntity corporateEmployeeAdminEntity = auth_user_admin.get();
-            if(!corporateEmployeeAdminEntity.getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
-                    !corporateEmployeeAdminEntity.getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))
+            if(!(corporateEmployeeAdminEntity.getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    corporateEmployeeAdminEntity.getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN)))
                 throw new CorporateException(
                         ApplicationConstant.UN_AUTH_ACTION,
                         "Unauthorized action. You can't processed this action"
