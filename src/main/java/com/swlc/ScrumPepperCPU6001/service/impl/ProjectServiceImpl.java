@@ -50,7 +50,7 @@ public class ProjectServiceImpl implements ProjectService {
         log.info("Execute method createNewProject : addProjectRequestDTO : " + addProjectRequestDTO.toString());
         try {
             Optional<CorporateEntity> corporateById = corporateRepository.findById(addProjectRequestDTO.getCorporateId());
-            if(corporateById.isPresent())
+            if(!corporateById.isPresent())
                 throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND,
                         "Corporate account not found");
             CorporateEntity corporateEntity = corporateById.get();
