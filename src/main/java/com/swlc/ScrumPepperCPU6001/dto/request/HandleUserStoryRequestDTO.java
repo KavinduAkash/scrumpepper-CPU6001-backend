@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * @author hp
  */
@@ -12,17 +14,21 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddUserStoryRequestDTO {
+public class HandleUserStoryRequestDTO {
     private long projectId;
+    private long userStoryId;
     private String title;
     private String description;
+    private List<Long> userStoryLabels;
 
     @Override
     public String toString() {
-        return "AddUserStoryRequestDTO{" +
+        return "HandleUserStoryRequestDTO{" +
                 "projectId=" + projectId +
+                ", userStoryId=" + userStoryId +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
+                ", userStoryLabels=" + userStoryLabels +
                 '}';
     }
 }
