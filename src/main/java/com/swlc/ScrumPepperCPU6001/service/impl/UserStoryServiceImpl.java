@@ -1,7 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
-import com.swlc.ScrumPepperCPU6001.dto.request.AddUserStoryRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
@@ -43,7 +43,7 @@ public class UserStoryServiceImpl implements UserStoryService {
     }
 
     @Override
-    public boolean createNewUserStory(AddUserStoryRequestDTO addUserStoryRequestDTO) {
+    public boolean handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO) {
         log.info("Execute method createNewUserStory : addUserStoryRequestDTO : " + addUserStoryRequestDTO.toString());
         try {
             Optional<ProjectEntity> projectById = projectRepository.findById(addUserStoryRequestDTO.getProjectId());
@@ -83,18 +83,35 @@ public class UserStoryServiceImpl implements UserStoryService {
                             "Unauthorized action. You can't processed this action"
                     );
             }
-            userStoryRepository.save(
-                    new ProjectUserStoryEntity(
-                            projectEntity,
-                            addUserStoryRequestDTO.getTitle(),
-                            addUserStoryRequestDTO.getDescription(),
-                            new Date(),
-                            new Date(),
-                            auth_user_admin.get(),
-                            auth_user_admin.get(),
-                            UserStoryStatusType.TODO
-                    )
-            );
+
+
+            if(addUserStoryRequestDTO.getUserStoryId()!=0) {
+                Optional<ProjectUserStoryEntity> byId =
+                        userStoryRepository.findById(addUserStoryRequestDTO.getUserStoryId());
+                if(!byId.isPresent())
+                    throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
+                ProjectUserStoryEntity projectUserStoryEntity = byId.get();
+                projectUserStoryEntity.setTitle(addUserStoryRequestDTO.getTitle());
+                projectUserStoryEntity.setDescription(addUserStoryRequestDTO.getDescription());
+                projectUserStoryEntity.setModifiedDate(new Date());
+                projectUserStoryEntity.setModifiedBy(auth_user_admin.get());
+                userStoryRepository.save(projectUserStoryEntity);
+
+            } else {
+                userStoryRepository.save(
+                        new ProjectUserStoryEntity(
+                                projectEntity,
+                                addUserStoryRequestDTO.getTitle(),
+                                addUserStoryRequestDTO.getDescription(),
+                                new Date(),
+                                new Date(),
+                                auth_user_admin.get(),
+                                auth_user_admin.get(),
+                                UserStoryStatusType.TODO
+                        )
+                );
+            }
+
             return true;
         } catch (Exception e) {
             log.error("Method createNewUserStory : " + e.getMessage(), e);
