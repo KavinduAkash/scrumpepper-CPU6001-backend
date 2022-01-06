@@ -14,12 +14,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateUserStoryStatusRequestDTO {
+    private long userStoryId;
     private UserStoryStatusType status;
 
     @Override
     public String toString() {
         return "UpdateUserStoryStatusRequestDTO{" +
-                "status=" + status +
+                "userStoryId=" + userStoryId +
+                ", status=" + status +
                 '}';
     }
 }
