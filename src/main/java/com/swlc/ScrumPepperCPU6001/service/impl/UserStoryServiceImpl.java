@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserStoryStatusRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
@@ -115,6 +116,79 @@ public class UserStoryServiceImpl implements UserStoryService {
             return true;
         } catch (Exception e) {
             log.error("Method createNewUserStory : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean updateUserStoryStatus(UpdateUserStoryStatusRequestDTO updateUserStoryStatusRequestDTO) {
+        log.info("Execute method updateUserStoryStatus : updateUserStoryStatusRequestDTO : " + updateUserStoryStatusRequestDTO.toString());
+        try {
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<ProjectUserStoryEntity> byId = userStoryRepository.findById(updateUserStoryStatusRequestDTO.getUserStoryId());
+            if(!byId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
+            ProjectUserStoryEntity projectUserStoryEntity = byId.get();
+            if(projectUserStoryEntity.getStatusType().equals(UserStoryStatusType.DELETE))
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
+            projectUserStoryEntity.setStatusType(updateUserStoryStatusRequestDTO.getStatus());
+            ProjectEntity projectEntity = projectUserStoryEntity.getProjectEntity();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+
+            if(updateUserStoryStatusRequestDTO.getStatus().equals(UserStoryStatusType.DELETE)) {
+                if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                        auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                    Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                            projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                    projectEntity,
+                                    auth_user_admin.get()
+                            );
+                    if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                        throw new CorporateException(
+                                ApplicationConstant.UN_AUTH_ACTION,
+                                "Unauthorized action. You can't processed this action"
+                        );
+                    ProjectMemberEntity projectMemberEntity = byProjectEntityAndCorporateEmployeeEntity.get();
+                    if(!(projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER) ||
+                            projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER)))
+                        throw new CorporateException(
+                                ApplicationConstant.UN_AUTH_ACTION,
+                                "Unauthorized action. You can't processed this action"
+                        );
+                }
+            } else {
+                if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                        auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                    Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                            projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                    projectEntity,
+                                    auth_user_admin.get()
+                            );
+                    if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                        throw new CorporateException(
+                                ApplicationConstant.UN_AUTH_ACTION,
+                                "Unauthorized action. You can't processed this action"
+                        );
+                }
+
+            }
+            projectUserStoryEntity.setStatusType(updateUserStoryStatusRequestDTO.getStatus());
+            userStoryRepository.save(projectUserStoryEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method updateUserStoryStatus : " + e.getMessage(), e);
             throw e;
         }
     }
