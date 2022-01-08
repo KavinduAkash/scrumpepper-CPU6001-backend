@@ -55,7 +55,7 @@ public class UserStoryController {
         );
     }
 
-    @PostMapping(value = "lbl" , consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/lbl" , consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addUserStoryLbl(@RequestBody AddUserStoryLblRequestDTO addUserStoryLblRequestDTO) {
         List<UserStoryLblDTO> result = addUserStoryRequestDTO.createNewUserStoryLbl(addUserStoryLblRequestDTO);
         return new ResponseEntity<>(

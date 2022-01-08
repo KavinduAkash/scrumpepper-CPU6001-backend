@@ -56,6 +56,10 @@ public class ResourceServerConfigurer extends ResourceServerConfigurerAdapter {
 // ------------ /user-story --------------------------------------------------------------------------------------------
                 .antMatchers(HttpMethod.POST, ApplicationConstant.API_BASE_URL + "/user-story/create")
                 .access("hasAnyRole('ROLE_USER')")
+                .antMatchers(HttpMethod.PATCH, ApplicationConstant.API_BASE_URL + "/user-story/create")
+                .access("hasAnyRole('ROLE_USER')")
+                .antMatchers(HttpMethod.POST, ApplicationConstant.API_BASE_URL + "/user-story/create/lbl")
+                .access("hasAnyRole('ROLE_USER')")
                 .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
     }
 }
