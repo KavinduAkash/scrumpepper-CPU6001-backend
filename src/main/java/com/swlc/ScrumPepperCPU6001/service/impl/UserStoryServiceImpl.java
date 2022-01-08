@@ -10,17 +10,16 @@ import com.swlc.ScrumPepperCPU6001.enums.ScrumRoles;
 import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
-import com.swlc.ScrumPepperCPU6001.repository.CorporateEmployeeRepository;
-import com.swlc.ScrumPepperCPU6001.repository.ProjectMemberRepository;
-import com.swlc.ScrumPepperCPU6001.repository.ProjectRepository;
-import com.swlc.ScrumPepperCPU6001.repository.UserStoryRepository;
+import com.swlc.ScrumPepperCPU6001.repository.*;
 import com.swlc.ScrumPepperCPU6001.service.UserStoryService;
 import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -33,14 +32,18 @@ public class UserStoryServiceImpl implements UserStoryService {
     private final ProjectRepository projectRepository;
     private final CorporateEmployeeRepository corporateEmployeeRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final UserStoryLabelRepository userStoryLabelRepository;
+    private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
-    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository) {
+    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.userStoryLabelRepository = userStoryLabelRepository;
+        this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
     }
 
     @Override
@@ -85,7 +88,6 @@ public class UserStoryServiceImpl implements UserStoryService {
                     );
             }
 
-
             if(addUserStoryRequestDTO.getUserStoryId()!=0) {
                 Optional<ProjectUserStoryEntity> byId =
                         userStoryRepository.findById(addUserStoryRequestDTO.getUserStoryId());
@@ -96,10 +98,52 @@ public class UserStoryServiceImpl implements UserStoryService {
                 projectUserStoryEntity.setDescription(addUserStoryRequestDTO.getDescription());
                 projectUserStoryEntity.setModifiedDate(new Date());
                 projectUserStoryEntity.setModifiedBy(auth_user_admin.get());
-                userStoryRepository.save(projectUserStoryEntity);
+                ProjectUserStoryEntity save = userStoryRepository.save(projectUserStoryEntity);
+
+                List<Long> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
+                List<Long> userStoryLabelIdsByUserStoryId = projectUserStoryLabelRepository.getUserStoryLabelIdsByUserStoryId(save);
+
+                List<Long> userStoryLabelSave = new ArrayList<>();
+                List<Long> userStoryLabelDelete = new ArrayList<>();
+
+                for (long id : userStoryLabels) {
+                    boolean alreadyExist = false;
+                    for (int i = 0; i<userStoryLabelIdsByUserStoryId.size(); i++) {
+                        if(id==userStoryLabelIdsByUserStoryId.get(i)) {
+                            alreadyExist = true;
+                        }
+                    }
+                    if(!alreadyExist) {
+                        userStoryLabelSave.add(id);
+                    }
+                }
+
+                for (long id : userStoryLabelIdsByUserStoryId) {
+                    boolean alreadyExist = false;
+                    for(int j = 0; j<userStoryLabels.size(); j++) {
+                        if(id == userStoryLabels.get(j)) {
+                            alreadyExist = true;
+                        }
+                    }
+                    if(!alreadyExist) {
+                        userStoryLabelDelete.add(id);
+                    }
+                }
+
+                if(!userStoryLabelDelete.isEmpty()) {
+                    projectUserStoryLabelRepository.deleteAllById(userStoryLabelDelete);
+                }
+                if(!userStoryLabelSave.isEmpty()) {
+                    List<UserStoryLabelEntity> allById = userStoryLabelRepository.findAllById(userStoryLabelSave);
+                    List<ProjectUserStoryLabelEntity> projectUserStories =  new ArrayList<>();
+                    for (UserStoryLabelEntity u : allById) {
+                        projectUserStories.add(new ProjectUserStoryLabelEntity(save, u));
+                    }
+                    projectUserStoryLabelRepository.saveAll(projectUserStories);
+                }
 
             } else {
-                userStoryRepository.save(
+                ProjectUserStoryEntity save = userStoryRepository.save(
                         new ProjectUserStoryEntity(
                                 projectEntity,
                                 addUserStoryRequestDTO.getTitle(),
@@ -111,6 +155,17 @@ public class UserStoryServiceImpl implements UserStoryService {
                                 UserStoryStatusType.TODO
                         )
                 );
+
+                List<ProjectUserStoryLabelEntity> projectUserStoryLabelEntityList =  new ArrayList<>();
+                List<Long> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
+                for (long id : userStoryLabels) {
+                    Optional<UserStoryLabelEntity> byId = userStoryLabelRepository.findById(id);
+                    if(!byId.isPresent())
+                        throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story label not found");
+                    projectUserStoryLabelEntityList.add(new ProjectUserStoryLabelEntity(save, byId.get()));
+                }
+
+                projectUserStoryLabelRepository.saveAll(projectUserStoryLabelEntityList);
             }
 
             return true;
