@@ -6,6 +6,7 @@ import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
 import com.swlc.ScrumPepperCPU6001.dto.SprintDTO;
 import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddSprintRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateSprintRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
@@ -191,6 +192,151 @@ public class SprintServiceImpl implements SprintService {
             );
         } catch (Exception e) {
             log.error("Method createSprint : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public SprintDTO updateSprint(UpdateSprintRequestDTO updateSprintRequestDTO) {
+        log.info("Execute method updateSprint : updateSprintRequestDTO : " + updateSprintRequestDTO.toString());
+        try {
+            Optional<ProjectEntity> projectById = projectRepository.findById(updateSprintRequestDTO.getProjectId());
+            if(!projectById.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+            ProjectEntity projectEntity = projectById.get();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                        projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                projectEntity,
+                                auth_user_admin.get()
+                        );
+                if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+                ProjectMemberEntity projectMemberEntity = byProjectEntityAndCorporateEmployeeEntity.get();
+                if(!(projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER) ||
+                        projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER)))
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+            }
+
+            Optional<ProjectSprintEntity> byId = sprintRepository.findById(updateSprintRequestDTO.getId());
+            if(!byId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Sprint not found");
+
+            Optional<ProjectSprintEntity> byProjectEntityAndSprintName =
+                    sprintRepository.findByProjectEntityAndSprintName(projectById.get(), updateSprintRequestDTO.getSprintName());
+            if(byProjectEntityAndSprintName.isPresent()) {
+                if(byProjectEntityAndSprintName.get().getId()!=updateSprintRequestDTO.getId()) {
+                    throw new ProjectException(ApplicationConstant.RESOURCE_ALREADY_EXIST,
+                            "A sprint already exist with given sprint name");
+                }
+            }
+
+            ProjectSprintEntity projectSprintEntity = byId.get();
+            projectSprintEntity.setSprintName(updateSprintRequestDTO.getSprintName());
+            projectSprintEntity.setDescription(updateSprintRequestDTO.getDescription());
+            projectSprintEntity.setModifiedDate(new Date());
+            projectSprintEntity.setModifiedBy(auth_user_admin.get());
+            ProjectSprintEntity save = sprintRepository.save(projectSprintEntity);
+
+            //created by
+            CorporateEmployeeEntity createdBy = save.getAssignedBy();
+            UserEntity userEntity = createdBy.getUserEntity();
+            CorporateEmployeeDTO assignedCorporateEmployeeDTO = new CorporateEmployeeDTO(
+                    createdBy.getId(),
+                    new UserDTO(
+                            userEntity.getId(),
+                            userEntity.getRefNo(),
+                            userEntity.getFirstName(),
+                            userEntity.getLastName(),
+                            userEntity.getContactNumber(),
+                            userEntity.getEmail(),
+                            null,
+                            userEntity.getCreatedDate(),
+                            userEntity.getStatusType()
+                    ),
+                    new CorporateDTO(
+                            corporateEntity.getId(),
+                            corporateEntity.getName(),
+                            corporateEntity.getAddress(),
+                            corporateEntity.getContactNumber1(),
+                            corporateEntity.getContactNumber2(),
+                            corporateEntity.getEmail(),
+                            corporateEntity.getCorporateLogo(),
+                            corporateEntity.getStatusType()
+                    ),
+                    createdBy.getCorporateAccessType(),
+                    createdBy.getCreatedDate(),
+                    createdBy.getModifiedDate(),
+                    createdBy.getAcceptedDate(),
+                    createdBy.getStatusType()
+            );
+
+            CorporateEmployeeEntity modifiedBy = save.getModifiedBy();
+            userEntity = modifiedBy.getUserEntity();
+
+            CorporateEmployeeDTO modifiedCorporateEmployeeDTO = new CorporateEmployeeDTO(
+                    modifiedBy.getId(),
+                    new UserDTO(
+                            userEntity.getId(),
+                            userEntity.getRefNo(),
+                            userEntity.getFirstName(),
+                            userEntity.getLastName(),
+                            userEntity.getContactNumber(),
+                            userEntity.getEmail(),
+                            null,
+                            userEntity.getCreatedDate(),
+                            userEntity.getStatusType()
+                    ),
+                    new CorporateDTO(
+                            corporateEntity.getId(),
+                            corporateEntity.getName(),
+                            corporateEntity.getAddress(),
+                            corporateEntity.getContactNumber1(),
+                            corporateEntity.getContactNumber2(),
+                            corporateEntity.getEmail(),
+                            corporateEntity.getCorporateLogo(),
+                            corporateEntity.getStatusType()
+                    ),
+                    modifiedBy.getCorporateAccessType(),
+                    modifiedBy.getCreatedDate(),
+                    modifiedBy.getModifiedDate(),
+                    modifiedBy.getAcceptedDate(),
+                    modifiedBy.getStatusType()
+            );
+
+            return new SprintDTO(
+                    save.getId(),
+                    save.getProjectEntity().getId(),
+                    save.getSprintName(),
+                    save.getDescription(),
+                    save.getCreatedDate(),
+                    save.getModifiedDate(),
+                    assignedCorporateEmployeeDTO,
+                    modifiedCorporateEmployeeDTO,
+                    save.getStatusType()
+            );
+        } catch (Exception e) {
+            log.error("Method updateSprint : " + e.getMessage(), e);
             throw e;
         }
     }
