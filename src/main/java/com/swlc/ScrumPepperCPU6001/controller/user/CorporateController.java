@@ -42,7 +42,7 @@ public class CorporateController {
         );
     }
 
-    @DeleteMapping(value = "/remove", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/remove", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity deleteCorporate(@RequestBody DeleteCorporateRequestDTO deleteCorporateRequestDTO) {
         boolean result = corporateService.deleteCorporate(deleteCorporateRequestDTO);
         return new ResponseEntity<>(

@@ -36,6 +36,26 @@ public class ResourceServerConfigurer extends ResourceServerConfigurerAdapter {
                 .access("hasAnyRole('ROLE_USER')")
                 .antMatchers(HttpMethod.DELETE, ApplicationConstant.API_BASE_URL + "/user/delete")
                 .access("hasAnyRole('ROLE_USER')")
+// ------------ /corporate ---------------------------------------------------------------------------------------------
+                .antMatchers(HttpMethod.DELETE, ApplicationConstant.API_BASE_URL + "/corporate/create")
+                .access("hasAnyRole('ROLE_USER')")
+                .antMatchers(HttpMethod.DELETE, ApplicationConstant.API_BASE_URL + "/corporate/update")
+                .access("hasAnyRole('ROLE_USER')")
+                .antMatchers(HttpMethod.DELETE, ApplicationConstant.API_BASE_URL + "/corporate/remove")
+                .access("hasAnyRole('ROLE_USER')")
+// ------------ /project -----------------------------------------------------------------------------------------------
+                .antMatchers(HttpMethod.DELETE, ApplicationConstant.API_BASE_URL + "/project/create")
+                .access("hasAnyRole('ROLE_USER')")
+// ------------ /project-member ----------------------------------------------------------------------------------------
+                .antMatchers(HttpMethod.PATCH, ApplicationConstant.API_BASE_URL + "/project-member/add")
+                .access("hasAnyRole('ROLE_USER')")
+                .antMatchers(HttpMethod.PATCH, ApplicationConstant.API_BASE_URL + "/project-member/update")
+                .access("hasAnyRole('ROLE_USER')")
+                .antMatchers(HttpMethod.DELETE, ApplicationConstant.API_BASE_URL + "/project-member/remove")
+                .access("hasAnyRole('ROLE_USER')")
+// ------------ /user-story --------------------------------------------------------------------------------------------
+                .antMatchers(HttpMethod.POST, ApplicationConstant.API_BASE_URL + "/user-story/create")
+                .access("hasAnyRole('ROLE_USER')")
                 .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
     }
 }

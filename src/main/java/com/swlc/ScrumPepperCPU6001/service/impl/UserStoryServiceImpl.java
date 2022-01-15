@@ -1,0 +1,195 @@
+package com.swlc.ScrumPepperCPU6001.service.impl;
+
+import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
+import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserStoryStatusRequestDTO;
+import com.swlc.ScrumPepperCPU6001.entity.*;
+import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
+import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
+import com.swlc.ScrumPepperCPU6001.enums.ScrumRoles;
+import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
+import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
+import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
+import com.swlc.ScrumPepperCPU6001.repository.CorporateEmployeeRepository;
+import com.swlc.ScrumPepperCPU6001.repository.ProjectMemberRepository;
+import com.swlc.ScrumPepperCPU6001.repository.ProjectRepository;
+import com.swlc.ScrumPepperCPU6001.repository.UserStoryRepository;
+import com.swlc.ScrumPepperCPU6001.service.UserStoryService;
+import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.Optional;
+
+/**
+ * @author hp
+ */
+@Service
+@Log4j2
+public class UserStoryServiceImpl implements UserStoryService {
+    private final UserStoryRepository userStoryRepository;
+    private final ProjectRepository projectRepository;
+    private final CorporateEmployeeRepository corporateEmployeeRepository;
+    private final ProjectMemberRepository projectMemberRepository;
+    @Autowired
+    private TokenValidator tokenValidator;
+
+    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository) {
+        this.userStoryRepository = userStoryRepository;
+        this.projectRepository = projectRepository;
+        this.corporateEmployeeRepository = corporateEmployeeRepository;
+        this.projectMemberRepository = projectMemberRepository;
+    }
+
+    @Override
+    public boolean handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO) {
+        log.info("Execute method createNewUserStory : addUserStoryRequestDTO : " + addUserStoryRequestDTO.toString());
+        try {
+            Optional<ProjectEntity> projectById = projectRepository.findById(addUserStoryRequestDTO.getProjectId());
+            if(!projectById.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+            ProjectEntity projectEntity = projectById.get();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                        projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                projectEntity,
+                                auth_user_admin.get()
+                        );
+                if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+                ProjectMemberEntity projectMemberEntity = byProjectEntityAndCorporateEmployeeEntity.get();
+                if(!(projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER) ||
+                        projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER)))
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+            }
+
+
+            if(addUserStoryRequestDTO.getUserStoryId()!=0) {
+                Optional<ProjectUserStoryEntity> byId =
+                        userStoryRepository.findById(addUserStoryRequestDTO.getUserStoryId());
+                if(!byId.isPresent())
+                    throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
+                ProjectUserStoryEntity projectUserStoryEntity = byId.get();
+                projectUserStoryEntity.setTitle(addUserStoryRequestDTO.getTitle());
+                projectUserStoryEntity.setDescription(addUserStoryRequestDTO.getDescription());
+                projectUserStoryEntity.setModifiedDate(new Date());
+                projectUserStoryEntity.setModifiedBy(auth_user_admin.get());
+                userStoryRepository.save(projectUserStoryEntity);
+
+            } else {
+                userStoryRepository.save(
+                        new ProjectUserStoryEntity(
+                                projectEntity,
+                                addUserStoryRequestDTO.getTitle(),
+                                addUserStoryRequestDTO.getDescription(),
+                                new Date(),
+                                new Date(),
+                                auth_user_admin.get(),
+                                auth_user_admin.get(),
+                                UserStoryStatusType.TODO
+                        )
+                );
+            }
+
+            return true;
+        } catch (Exception e) {
+            log.error("Method createNewUserStory : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean updateUserStoryStatus(UpdateUserStoryStatusRequestDTO updateUserStoryStatusRequestDTO) {
+        log.info("Execute method updateUserStoryStatus : updateUserStoryStatusRequestDTO : " + updateUserStoryStatusRequestDTO.toString());
+        try {
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<ProjectUserStoryEntity> byId = userStoryRepository.findById(updateUserStoryStatusRequestDTO.getUserStoryId());
+            if(!byId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
+            ProjectUserStoryEntity projectUserStoryEntity = byId.get();
+            if(projectUserStoryEntity.getStatusType().equals(UserStoryStatusType.DELETE))
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
+            projectUserStoryEntity.setStatusType(updateUserStoryStatusRequestDTO.getStatus());
+            ProjectEntity projectEntity = projectUserStoryEntity.getProjectEntity();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+
+            if(updateUserStoryStatusRequestDTO.getStatus().equals(UserStoryStatusType.DELETE)) {
+                if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                        auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                    Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                            projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                    projectEntity,
+                                    auth_user_admin.get()
+                            );
+                    if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                        throw new CorporateException(
+                                ApplicationConstant.UN_AUTH_ACTION,
+                                "Unauthorized action. You can't processed this action"
+                        );
+                    ProjectMemberEntity projectMemberEntity = byProjectEntityAndCorporateEmployeeEntity.get();
+                    if(!(projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER) ||
+                            projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER)))
+                        throw new CorporateException(
+                                ApplicationConstant.UN_AUTH_ACTION,
+                                "Unauthorized action. You can't processed this action"
+                        );
+                }
+            } else {
+                if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                        auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                    Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                            projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                    projectEntity,
+                                    auth_user_admin.get()
+                            );
+                    if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                        throw new CorporateException(
+                                ApplicationConstant.UN_AUTH_ACTION,
+                                "Unauthorized action. You can't processed this action"
+                        );
+                }
+
+            }
+            projectUserStoryEntity.setStatusType(updateUserStoryStatusRequestDTO.getStatus());
+            userStoryRepository.save(projectUserStoryEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method updateUserStoryStatus : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+}
