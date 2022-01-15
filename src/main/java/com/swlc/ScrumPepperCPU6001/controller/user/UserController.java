@@ -60,4 +60,13 @@ public class UserController {
         );
     }
 
+    @GetMapping(value = "/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getUserDetails() {
+        boolean result = userService.deleteUser();
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Your account deleted successfully", null),
+                HttpStatus.OK
+        );
+    }
+
 }

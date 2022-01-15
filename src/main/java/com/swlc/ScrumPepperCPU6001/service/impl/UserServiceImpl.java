@@ -59,6 +59,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDTO getUserDetailsByToken() {
+        log.info("Execute method getUserDetailsByToken : ");
+        try {
+            UserEntity userEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            if(userEntity==null) throw new UserException(ApplicationConstant.RESOURCE_NOT_FOUND, "User not found");
+            return new UserDTO(
+                    userEntity.getId(),
+                    userEntity.getRefNo(),
+                    userEntity.getFirstName(),
+                    userEntity.getLastName(),
+                    userEntity.getContactNumber(),
+                    userEntity.getEmail(),
+                    null,
+                    userEntity.getCreatedDate(),
+                    userEntity.getStatusType()
+            );
+        } catch (Exception e) {
+            log.error("Method getUserDetailsByToken : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
     public boolean registerNewUser(AddUserRequestDTO addUserRequestDTO) {
         log.info("Execute method registerNewUser : addUserRequestDTO : " + addUserRequestDTO.toString());
         try {
