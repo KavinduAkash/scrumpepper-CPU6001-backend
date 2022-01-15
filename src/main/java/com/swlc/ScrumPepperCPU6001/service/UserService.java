@@ -9,6 +9,7 @@ import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserRequestDTO;
  */
 public interface UserService {
     UserDTO getUserDetailsByEmail(String email);
+    UserDTO getUserDetailsByToken();
     boolean registerNewUser(AddUserRequestDTO addUserRequestDTO);
     boolean checkDetailsEligibility(String action, String value);
     boolean updateUser(UpdateUserRequestDTO updateUserRequestDTO);
