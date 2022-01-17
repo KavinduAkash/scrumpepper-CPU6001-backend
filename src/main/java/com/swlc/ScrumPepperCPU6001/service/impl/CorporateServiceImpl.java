@@ -1,6 +1,8 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
+import com.swlc.ScrumPepperCPU6001.dto.CorporateDTO;
+import com.swlc.ScrumPepperCPU6001.dto.MyCorporateDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.DeleteCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateRequestDTO;
@@ -23,7 +25,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -152,14 +156,52 @@ public class CorporateServiceImpl implements CorporateService {
     }
 
     @Override
+    public List<MyCorporateDTO> getMyCorporates() {
+        log.info("Execute method getMyCorporates : ");
+        List<MyCorporateDTO> result = new ArrayList<>();
+        try {
+            UserEntity userEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            List<CorporateEmployeeEntity> byUserEntityAndStatusType =
+                    corporateEmployeeRepository.findByUserEntityAndStatusType(userEntity, CorporateAccessStatusType.ACTIVE);
+            for (CorporateEmployeeEntity ce:byUserEntityAndStatusType) {
+                result.add(this.prepareMyCorporateDTOs(ce));
+            }
+        } catch (Exception e) {
+            log.error("Method getMyCorporates : " + e.getMessage(), e);
+        }
+        return result;
+    }
+
+    @Override
     public String uploadCorporateLogo(MultipartFile file) {
-        log.info("Execute method uploadCorporateLogo : " + file
-        );
+        log.info("Execute method uploadCorporateLogo : " + file);
         try {
             String path = fileWriter.saveMultipartImage(file);
             return path;
         } catch (Exception e) {
             log.error("Method uploadCorporateLogo : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private MyCorporateDTO prepareMyCorporateDTOs(CorporateEmployeeEntity ce) {
+        log.info("Execute method prepareMyCorporateDTOs : " + ce.toString());
+        try {
+            CorporateEntity c = ce.getCorporateEntity();
+            CorporateDTO corporateDTO = new CorporateDTO(
+                    c.getId(),
+                    c.getName(),
+                    c.getAddress(),
+                    c.getContactNumber1(),
+                    c.getContactNumber2(),
+                    c.getEmail(),
+                    c.getCorporateLogo(),
+                    c.getStatusType()
+            );
+            CorporateAccessType corporateAccessType = ce.getCorporateAccessType();
+            return new MyCorporateDTO(corporateDTO, corporateAccessType);
+        } catch (Exception e) {
+            log.error("Method prepareMyCorporateDTOs : " + e.getMessage(), e);
             throw e;
         }
     }

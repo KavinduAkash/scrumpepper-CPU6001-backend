@@ -1,5 +1,6 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
+import com.swlc.ScrumPepperCPU6001.dto.MyCorporateDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.DeleteCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateRequestDTO;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author hp
@@ -49,6 +52,15 @@ public class CorporateController {
         boolean result = corporateService.deleteCorporate(deleteCorporateRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your corporate account deleted successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/my-corporates", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getMyCorporates() {
+        List<MyCorporateDTO> result = corporateService.getMyCorporates();
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Found your corporates successfully", result),
                 HttpStatus.OK
         );
     }
