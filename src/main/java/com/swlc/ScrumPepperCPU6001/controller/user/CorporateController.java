@@ -3,7 +3,9 @@ package com.swlc.ScrumPepperCPU6001.controller.user;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.DeleteCorporateRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UploadImageRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.UploadImageResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.CorporateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,8 +26,8 @@ public class CorporateController {
         this.corporateService = corporateService;
     }
 
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity createCorporate(@ModelAttribute AddCorporateRequestDTO addCorporateRequestDTO) {
+    @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity createCorporate(@RequestBody AddCorporateRequestDTO addCorporateRequestDTO) {
         boolean result = corporateService.createNewCorporate(addCorporateRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your corporate account created successfully", null),
@@ -47,6 +49,20 @@ public class CorporateController {
         boolean result = corporateService.deleteCorporate(deleteCorporateRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your corporate account deleted successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping(value = "/A2b4-8a486269971ed2326920", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity uploadCorporateLogo(@ModelAttribute UploadImageRequestDTO uploadImageRequestDTO) {
+        String path = corporateService.uploadCorporateLogo(uploadImageRequestDTO.getFile());
+        return new ResponseEntity<>(
+                new UploadImageResponseDTO(
+                        "xxx.png",
+                        "done",
+                        "https://cdn.arstechnica.net/wp-content/uploads/2016/02/5718897981_10faa45ac3_b-640x624.jpg",
+                        path
+                ),
                 HttpStatus.OK
         );
     }

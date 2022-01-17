@@ -14,12 +14,14 @@ import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.repository.CorporateEmployeeRepository;
 import com.swlc.ScrumPepperCPU6001.repository.CorporateRepository;
 import com.swlc.ScrumPepperCPU6001.service.CorporateService;
+import com.swlc.ScrumPepperCPU6001.util.FileWriter;
 import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.Optional;
@@ -36,6 +38,8 @@ public class CorporateServiceImpl implements CorporateService {
     private final CorporateEmployeeRepository corporateEmployeeRepository;
     @Autowired
     private TokenValidator tokenValidator;
+    @Autowired
+    private FileWriter fileWriter;
 
     public CorporateServiceImpl(CorporateRepository corporateRepository, CorporateEmployeeRepository corporateEmployeeRepository) {
         this.corporateRepository = corporateRepository;
@@ -143,6 +147,19 @@ public class CorporateServiceImpl implements CorporateService {
             return true;
         } catch (Exception e) {
             log.error("Method deleteCorporate : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public String uploadCorporateLogo(MultipartFile file) {
+        log.info("Execute method uploadCorporateLogo : " + file
+        );
+        try {
+            String path = fileWriter.saveMultipartImage(file);
+            return path;
+        } catch (Exception e) {
+            log.error("Method uploadCorporateLogo : " + e.getMessage(), e);
             throw e;
         }
     }
