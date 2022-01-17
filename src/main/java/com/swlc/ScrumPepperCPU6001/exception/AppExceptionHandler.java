@@ -41,4 +41,10 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(
                 new ErrorMessageResponseDTO(false, ex.getStatus(), ex.getMsg()), HttpStatus.OK);
     }
+
+    @ExceptionHandler(value = {FileUploadException.class})
+    ResponseEntity<ErrorMessageResponseDTO> handleFileUploadException(FileUploadException ex, WebRequest webRequest) {
+        return new ResponseEntity<>(
+                new ErrorMessageResponseDTO(false, ex.getStatus(), ex.getMsg()), HttpStatus.OK);
+    }
 }
