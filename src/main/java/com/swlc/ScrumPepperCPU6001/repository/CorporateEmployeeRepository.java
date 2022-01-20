@@ -24,4 +24,6 @@ public interface CorporateEmployeeRepository extends JpaRepository<CorporateEmpl
     Optional<CorporateEmployeeEntity> findByUserEntityAndCorporateEntity(UserEntity userEntity, CorporateEntity corporateEntity);
 
     List<CorporateEmployeeEntity> findByUserEntityAndStatusType(UserEntity userEntity, CorporateAccessStatusType statusType);
+
+    List<CorporateEmployeeEntity> findAllByCorporateEntityAndStatusType(CorporateEntity corporateEntity, CorporateAccessStatusType statusType);
 }

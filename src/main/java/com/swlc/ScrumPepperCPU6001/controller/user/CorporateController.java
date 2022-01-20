@@ -1,11 +1,9 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.MyCorporateDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.DeleteCorporateRequestDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateRequestDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.UploadImageRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.*;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.GetCorporateDetailsResponseDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.UploadImageResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.CorporateService;
 import org.springframework.http.HttpStatus;
@@ -75,6 +73,15 @@ public class CorporateController {
                         "https://cdn.arstechnica.net/wp-content/uploads/2016/02/5718897981_10faa45ac3_b-640x624.jpg",
                         path
                 ),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/corporates-details", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getCorporateDetails(@RequestBody GetCorporateDetailsRequestDTO getCorporateDetailsRequestDTO) {
+        GetCorporateDetailsResponseDTO result = corporateService.getCorporateDetails(getCorporateDetailsRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Found your corporates successfully", result),
                 HttpStatus.OK
         );
     }
