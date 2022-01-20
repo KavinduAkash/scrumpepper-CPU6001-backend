@@ -7,6 +7,7 @@ import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -16,7 +17,11 @@ public interface CorporateEmployeeRepository extends JpaRepository<CorporateEmpl
     Optional<CorporateEmployeeEntity> findByUserEntityAndCorporateEntityAndCorporateAccessTypeAndStatusType(
             UserEntity userEntity, CorporateEntity corporateEntity, CorporateAccessType corporateAccessType,
             CorporateAccessStatusType statusType);
+
     Optional<CorporateEmployeeEntity> findByUserEntityAndCorporateEntityAndStatusType(
             UserEntity userEntity, CorporateEntity corporateEntity, CorporateAccessStatusType statusType);
+
     Optional<CorporateEmployeeEntity> findByUserEntityAndCorporateEntity(UserEntity userEntity, CorporateEntity corporateEntity);
+
+    List<CorporateEmployeeEntity> findByUserEntityAndStatusType(UserEntity userEntity, CorporateAccessStatusType statusType);
 }

@@ -25,7 +25,7 @@ public class CorporateEntity {
     private long id;
     @Column(nullable = false)
     private String name;
-    @Column(length = 1000, nullable = false, unique = true)
+    @Column(length = 1000, nullable = false)
     private String address;
     @Column(nullable = false)
     private String contactNumber1;

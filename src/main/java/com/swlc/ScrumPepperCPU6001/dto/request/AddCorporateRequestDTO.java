@@ -22,7 +22,7 @@ public class AddCorporateRequestDTO {
     private String contactNumber1;
     private String contactNumber2;
     private String email;
-    private MultipartFile corporateLogo;
+    private String corporateLogo;
     private Date registeredDate;
     private StatusType statusType;
 
