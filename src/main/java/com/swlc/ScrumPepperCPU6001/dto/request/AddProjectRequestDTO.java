@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * @author hp
  */
@@ -15,4 +17,14 @@ import lombok.Setter;
 public class AddProjectRequestDTO {
     private long corporateId;
     private String projectName;
+    private List<AddProjectMemberDTO> projectMembers;
+
+    @Override
+    public String toString() {
+        return "AddProjectRequestDTO{" +
+                "corporateId=" + corporateId +
+                ", projectName='" + projectName + '\'' +
+                ", projectMembers=" + projectMembers +
+                '}';
+    }
 }
