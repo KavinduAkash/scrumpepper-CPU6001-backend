@@ -77,7 +77,7 @@ public class CorporateController {
         );
     }
 
-    @GetMapping(value = "/corporates-details", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/corporates-details", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getCorporateDetails(@RequestBody GetCorporateDetailsRequestDTO getCorporateDetailsRequestDTO) {
         GetCorporateDetailsResponseDTO result = corporateService.getCorporateDetails(getCorporateDetailsRequestDTO);
         return new ResponseEntity<>(
