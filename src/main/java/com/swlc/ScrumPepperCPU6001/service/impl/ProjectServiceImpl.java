@@ -1,18 +1,19 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
+import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectRequestDTO;
-import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
-import com.swlc.ScrumPepperCPU6001.entity.CorporateEntity;
-import com.swlc.ScrumPepperCPU6001.entity.ProjectEntity;
-import com.swlc.ScrumPepperCPU6001.entity.UserEntity;
+import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
+import com.swlc.ScrumPepperCPU6001.enums.ProjectMemberStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.ProjectStatusType;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateEmployeeException;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
+import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
 import com.swlc.ScrumPepperCPU6001.repository.CorporateEmployeeRepository;
 import com.swlc.ScrumPepperCPU6001.repository.CorporateRepository;
+import com.swlc.ScrumPepperCPU6001.repository.ProjectMemberRepository;
 import com.swlc.ScrumPepperCPU6001.repository.ProjectRepository;
 import com.swlc.ScrumPepperCPU6001.service.ProjectService;
 import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -33,15 +35,17 @@ public class ProjectServiceImpl implements ProjectService {
     private final CorporateRepository corporateRepository;
     private final CorporateEmployeeRepository corporateEmployeeRepository;
     private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
     public ProjectServiceImpl(CorporateRepository corporateRepository,
                               CorporateEmployeeRepository corporateEmployeeRepository,
-                              ProjectRepository projectRepository) {
+                              ProjectRepository projectRepository, ProjectMemberRepository projectMemberRepository) {
         this.corporateRepository = corporateRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
         this.projectRepository = projectRepository;
+        this.projectMemberRepository = projectMemberRepository;
     }
 
 
@@ -72,7 +76,7 @@ public class ProjectServiceImpl implements ProjectService {
                         ApplicationConstant.UN_AUTH_ACTION,
                         "Unauthorized action. You can't processed this action"
                 );
-            projectRepository.save(
+            ProjectEntity savedProject = projectRepository.save(
                     new ProjectEntity(
                             corporateEntity,
                             addProjectRequestDTO.getProjectName(),
@@ -83,6 +87,26 @@ public class ProjectServiceImpl implements ProjectService {
                             ProjectStatusType.ACTIVE
                     )
             );
+            List<AddProjectMemberDTO> projectMembers = addProjectRequestDTO.getProjectMembers();
+            if(projectMembers!=null) {
+                for (AddProjectMemberDTO pm : projectMembers) {
+                    Optional<CorporateEmployeeEntity> byIdAndCorporateEntity = corporateEmployeeRepository.findByIdAndCorporateEntity(pm.getCorporateEmployeeId(), corporateEntity);
+                    if(!byIdAndCorporateEntity.isPresent())
+                        throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate member not found");
+                    projectMemberRepository.save(
+                            new ProjectMemberEntity(
+                                    savedProject,
+                                    byIdAndCorporateEntity.get(),
+                                    new Date(),
+                                    new Date(),
+                                    auth_user_admin.get(),
+                                    auth_user_admin.get(),
+                                    pm.getScrumRole(),
+                                    ProjectMemberStatusType.ACTIVE
+                            )
+                    );
+                }
+            }
             return true;
         } catch (Exception e) {
             log.error("Method createNewProject : " + e.getMessage(), e);

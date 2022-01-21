@@ -31,4 +31,6 @@ public interface CorporateEmployeeRepository extends JpaRepository<CorporateEmpl
 
     @Query(value = "SELECT * FROM corporate_employee e WHERE e.corporate_id = ?1 AND e.user_id IN(SELECT u.id FROM user u WHERE u.first_name LIKE %?2% OR u.last_name LIKE %?2% OR u.email LIKE %?2% OR u.ref_no LIKE %?2%)", nativeQuery = true)
     List<CorporateEmployeeEntity> searchCorporateEmployeeEntity(long corporateId, String search);
+
+    Optional<CorporateEmployeeEntity> findByIdAndCorporateEntity(long id, CorporateEntity corporateEntity);
 }
