@@ -20,6 +20,9 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMemberEnti
     @Query("SELECT pm.projectEntity FROM ProjectMemberEntity pm WHERE pm.corporateEmployeeEntity = :corporateEmployee")
     List<ProjectEntity> getByCorporateEmployeeEntity(@Param("corporateEmployee")CorporateEmployeeEntity corporateEmployeeEntity);
 
+    @Query("SELECT pm FROM ProjectMemberEntity pm WHERE pm.corporateEmployeeEntity = :corporateEmployee")
+    List<ProjectMemberEntity> getProjectMemberByCorporateEmployeeEntity(@Param("corporateEmployee")CorporateEmployeeEntity corporateEmployeeEntity);
+
     List<ProjectMemberEntity> findByProjectEntity(ProjectEntity projectEntity);
 
     Optional<ProjectMemberEntity> findByCorporateEmployeeEntityAndProjectEntity(CorporateEmployeeEntity corporateEmployeeEntity, ProjectEntity projectEntity);
