@@ -108,43 +108,47 @@ public class UserStoryServiceImpl implements UserStoryService {
                 projectUserStoryEntity.setModifiedBy(auth_user_admin.get());
                 ProjectUserStoryEntity save = userStoryRepository.save(projectUserStoryEntity);
 
-                List<Long> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
-                List<Long> userStoryLabelIdsByUserStoryId = projectUserStoryLabelRepository.getUserStoryLabelIdsByUserStoryId(save);
+                List<String> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
+                List<ProjectUserStoryLabelEntity> userStoryLabelIdsByUserStoryId = projectUserStoryLabelRepository.getUserStoryLabelsByUserStoryId(save);
 
-                List<Long> userStoryLabelSave = new ArrayList<>();
-                List<Long> userStoryLabelDelete = new ArrayList<>();
+                List<String> userStoryLabelSave = new ArrayList<>();
+                List<ProjectUserStoryLabelEntity> userStoryLabelDelete = new ArrayList<>();
 
-                for (long id : userStoryLabels) {
+                for (String lbl : userStoryLabels) {
                     boolean alreadyExist = false;
                     for (int i = 0; i<userStoryLabelIdsByUserStoryId.size(); i++) {
-                        if(id==userStoryLabelIdsByUserStoryId.get(i)) {
+                        if((userStoryLabelIdsByUserStoryId.get(i).getUserStoryLabelEntity().getLabel().toUpperCase()).equals(lbl.toUpperCase())) {
                             alreadyExist = true;
                         }
                     }
                     if(!alreadyExist) {
-                        userStoryLabelSave.add(id);
+                        userStoryLabelSave.add(lbl);
                     }
                 }
 
-                for (long id : userStoryLabelIdsByUserStoryId) {
+                for (ProjectUserStoryLabelEntity projectUserStoryLabelEntity : userStoryLabelIdsByUserStoryId) {
                     boolean alreadyExist = false;
                     for(int j = 0; j<userStoryLabels.size(); j++) {
-                        if(id == userStoryLabels.get(j)) {
+                        if((userStoryLabels.get(j).toUpperCase()).equals(projectUserStoryLabelEntity.getUserStoryLabelEntity().getLabel())) {
                             alreadyExist = true;
                         }
                     }
                     if(!alreadyExist) {
-                        userStoryLabelDelete.add(id);
+                        userStoryLabelDelete.add(projectUserStoryLabelEntity);
                     }
                 }
 
                 if(!userStoryLabelDelete.isEmpty()) {
-                    projectUserStoryLabelRepository.deleteAllById(userStoryLabelDelete);
+                    projectUserStoryLabelRepository.deleteAll(userStoryLabelDelete);
                 }
                 if(!userStoryLabelSave.isEmpty()) {
-                    List<UserStoryLabelEntity> allById = userStoryLabelRepository.findAllById(userStoryLabelSave);
+                    List<UserStoryLabelEntity> userStoryLabelEntities = new ArrayList<>();
+                    for (String userStoryLbl : userStoryLabelSave) {
+                        userStoryLabelEntities.add(new UserStoryLabelEntity(projectEntity, userStoryLbl));
+                    }
+                    List<UserStoryLabelEntity> userStoryLabelEntities1 = userStoryLabelRepository.saveAll(userStoryLabelEntities);
                     List<ProjectUserStoryLabelEntity> projectUserStories =  new ArrayList<>();
-                    for (UserStoryLabelEntity u : allById) {
+                    for (UserStoryLabelEntity u : userStoryLabelEntities1) {
                         projectUserStories.add(new ProjectUserStoryLabelEntity(save, u));
                     }
                     projectUserStoryLabelRepository.saveAll(projectUserStories);
@@ -165,12 +169,24 @@ public class UserStoryServiceImpl implements UserStoryService {
                 );
 
                 List<ProjectUserStoryLabelEntity> projectUserStoryLabelEntityList =  new ArrayList<>();
-                List<Long> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
-                for (long id : userStoryLabels) {
-                    Optional<UserStoryLabelEntity> byId = userStoryLabelRepository.findById(id);
-                    if(!byId.isPresent())
-                        throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story label not found");
-                    projectUserStoryLabelEntityList.add(new ProjectUserStoryLabelEntity(save, byId.get()));
+                List<String> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
+
+                List<UserStoryLabelEntity> byId = userStoryLabelRepository.findByProjectEntity(projectEntity);
+
+
+                for (String lbl : userStoryLabels) {
+                    for (UserStoryLabelEntity userStoryLabelEntity : byId) {
+                        boolean alreadyExist = false;
+                        if((userStoryLabelEntity.getLabel().toUpperCase()).equals(lbl)) {
+                            alreadyExist= true;
+                        }
+                        if(!alreadyExist) {
+                            UserStoryLabelEntity save1 = userStoryLabelRepository.save(new UserStoryLabelEntity(projectEntity, lbl));
+                            projectUserStoryLabelEntityList.add(new ProjectUserStoryLabelEntity(save, save1));
+                        } else {
+                            projectUserStoryLabelEntityList.add(new ProjectUserStoryLabelEntity(save, userStoryLabelEntity));
+                        }
+                    }
                 }
 
                 projectUserStoryLabelRepository.saveAll(projectUserStoryLabelEntityList);

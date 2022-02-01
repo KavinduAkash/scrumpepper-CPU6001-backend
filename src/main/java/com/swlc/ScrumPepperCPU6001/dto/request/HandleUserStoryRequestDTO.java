@@ -20,7 +20,7 @@ public class HandleUserStoryRequestDTO {
     private long userStoryId;
     private String title;
     private String description;
-    private List<Long> userStoryLabels;
+    private List<String> userStoryLabels;
     private UserStoryStatusType statusType;
 
     @Override
