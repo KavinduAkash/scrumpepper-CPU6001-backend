@@ -1,8 +1,4 @@
 package com.swlc.ScrumPepperCPU6001.dto;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
-import com.swlc.ScrumPepperCPU6001.entity.ProjectEntity;
 import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

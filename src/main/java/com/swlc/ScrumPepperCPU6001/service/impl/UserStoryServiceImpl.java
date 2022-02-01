@@ -310,7 +310,7 @@ public class UserStoryServiceImpl implements UserStoryService {
     }
 
     private UserStoryDTO prepareUserStoryDTO(ProjectUserStoryEntity userStoryEntity) {
-        log.info("Execute method prepareUserStoryDTO : @Param {} " + userStoryEntity);
+        log.info("Execute method prepareUserStoryDTO : @Param {} " + (userStoryEntity.getId()==199?userStoryEntity.getDescription():""));
         try {
             ProjectEntity p = userStoryEntity.getProjectEntity();
             return new UserStoryDTO(
@@ -342,7 +342,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 
     private CorporateEmployeeDTO prepareCorporateEmployeeDTO(CorporateEmployeeEntity c) {
-        log.info("Execute method prepareCorporateEmployeeDTO : @Param {} " + c);
+//        log.info("Execute method prepareCorporateEmployeeDTO : @Param {} " + c);
         try {
                 return new CorporateEmployeeDTO(
                         c.getId(),

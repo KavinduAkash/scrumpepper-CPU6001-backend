@@ -26,13 +26,14 @@ import java.util.List;
 public class UserStoryController {
 
     private final UserStoryService userStoryService;
-    private final UserStoryLblService addUserStoryRequestDTO;
+    private final UserStoryLblService userStoryLblService;
 
     @Autowired
-    public UserStoryController(UserStoryService userStoryService, UserStoryLblService addUserStoryRequestDTO) {
+    public UserStoryController(UserStoryService userStoryService, UserStoryLblService userStoryLblService) {
         this.userStoryService = userStoryService;
-        this.addUserStoryRequestDTO = addUserStoryRequestDTO;
+        this.userStoryLblService = userStoryLblService;
     }
+
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity handleUserStory(@RequestBody HandleUserStoryRequestDTO addUserStoryRequestDTO) {
@@ -58,9 +59,18 @@ public class UserStoryController {
 
     @PostMapping(value = "/lbl" , consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addUserStoryLbl(@RequestBody AddUserStoryLblRequestDTO addUserStoryLblRequestDTO) {
-        List<UserStoryLblDTO> result = addUserStoryRequestDTO.createNewUserStoryLbl(addUserStoryLblRequestDTO);
+        List<UserStoryLblDTO> result = userStoryLblService.createNewUserStoryLbl(addUserStoryLblRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "User story label created successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/get-project-lbl" , produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity addUserStoryLbl(@RequestParam long id) {
+        List<UserStoryLblDTO> result = userStoryLblService.getAllProjectUserStoryLbl(id);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project user story labels found successfully", result),
                 HttpStatus.OK
         );
     }
