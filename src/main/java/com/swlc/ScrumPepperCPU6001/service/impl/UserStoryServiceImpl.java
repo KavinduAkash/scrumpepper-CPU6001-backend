@@ -53,7 +53,7 @@ public class UserStoryServiceImpl implements UserStoryService {
     }
 
     @Override
-    public boolean handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO) {
+    public UserStoryDTO handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO) {
         log.info("Execute method createNewUserStory : addUserStoryRequestDTO : " + addUserStoryRequestDTO.toString());
         try {
             Optional<ProjectEntity> projectById = projectRepository.findById(addUserStoryRequestDTO.getProjectId());
@@ -93,6 +93,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                             "Unauthorized action. You can't processed this action"
                     );
             }
+
+            long user_story_id = addUserStoryRequestDTO.getUserStoryId();
 
             if(addUserStoryRequestDTO.getUserStoryId()!=0) {
                 Optional<ProjectUserStoryEntity> byId =
@@ -172,9 +174,13 @@ public class UserStoryServiceImpl implements UserStoryService {
                 }
 
                 projectUserStoryLabelRepository.saveAll(projectUserStoryLabelEntityList);
+                user_story_id = save.getId();
             }
 
-            return true;
+            Optional<ProjectUserStoryEntity> byId = userStoryRepository.findById(user_story_id);
+            ProjectUserStoryEntity projectUserStoryEntity = byId.get();
+            UserStoryDTO userStoryDTO = this.prepareUserStoryDTO(projectUserStoryEntity);
+            return userStoryDTO;
         } catch (Exception e) {
             log.error("Method createNewUserStory : " + e.getMessage(), e);
             throw e;

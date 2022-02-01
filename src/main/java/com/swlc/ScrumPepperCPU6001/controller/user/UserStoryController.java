@@ -36,9 +36,9 @@ public class UserStoryController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity handleUserStory(@RequestBody HandleUserStoryRequestDTO addUserStoryRequestDTO) {
-        boolean result = userStoryService.handleUserStory(addUserStoryRequestDTO);
+        UserStoryDTO result = userStoryService.handleUserStory(addUserStoryRequestDTO);
         return new ResponseEntity<>(
-                new CommonResponseDTO(true, "User story created successfully", null),
+                new CommonResponseDTO(true, "User story created successfully", result),
                 HttpStatus.OK
         );
     }
