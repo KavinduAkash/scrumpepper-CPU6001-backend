@@ -1,5 +1,6 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
+import com.swlc.ScrumPepperCPU6001.dto.UserStoryDTO;
 import com.swlc.ScrumPepperCPU6001.dto.UserStoryLblDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserStoryLblRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
@@ -63,4 +64,15 @@ public class UserStoryController {
                 HttpStatus.OK
         );
     }
+
+    @GetMapping(value = "/get-project" , produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity addUserStoryLbl(@RequestParam long id, @RequestParam long corporate) {
+        List<UserStoryDTO> result = userStoryService.getProjectBacklog(id, corporate);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "User stories found successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+
 }

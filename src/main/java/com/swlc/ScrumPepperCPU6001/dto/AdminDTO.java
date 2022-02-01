@@ -31,6 +31,9 @@ public class AdminDTO {
     private Date createdDate;
     private StatusType statusType;
 
+
+
+
     @Override
     public String toString() {
         return "AdminDTO{" +

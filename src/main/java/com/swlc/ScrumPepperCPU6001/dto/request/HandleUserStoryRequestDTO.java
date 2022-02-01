@@ -1,5 +1,6 @@
 package com.swlc.ScrumPepperCPU6001.dto.request;
 
+import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class HandleUserStoryRequestDTO {
     private String title;
     private String description;
     private List<Long> userStoryLabels;
+    private UserStoryStatusType statusType;
 
     @Override
     public String toString() {

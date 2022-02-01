@@ -1,6 +1,10 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
+import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
+import com.swlc.ScrumPepperCPU6001.dto.ProjectDTO;
+import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
+import com.swlc.ScrumPepperCPU6001.dto.UserStoryDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserStoryStatusRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
@@ -34,16 +38,18 @@ public class UserStoryServiceImpl implements UserStoryService {
     private final ProjectMemberRepository projectMemberRepository;
     private final UserStoryLabelRepository userStoryLabelRepository;
     private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
+    private final CorporateRepository corporateRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
-    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository) {
+    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.userStoryLabelRepository = userStoryLabelRepository;
         this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
+        this.corporateRepository = corporateRepository;
     }
 
     @Override
@@ -244,6 +250,116 @@ public class UserStoryServiceImpl implements UserStoryService {
             return true;
         } catch (Exception e) {
             log.error("Method updateUserStoryStatus : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<UserStoryDTO> getProjectBacklog(long id, long corporateId) {
+        log.info("Execute method getProjectBacklog : id: " + id + ", corporateId: " + corporateId);
+        try {
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEntity> byCorporateId = corporateRepository.findById(corporateId);
+            if(!byCorporateId.isPresent())
+                throw new CorporateException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate not found");
+
+
+
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            byCorporateId.get(),
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+
+            CorporateEmployeeEntity corporateEmployeeEntity = auth_user_admin.get();
+            Optional<ProjectEntity> byProjectId = projectRepository.findById(id);
+            if(!byProjectId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+
+            Optional<ProjectMemberEntity> projectMemberOptional =
+                    projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                            byProjectId.get(),
+                            corporateEmployeeEntity
+                    );
+
+            if(!projectMemberOptional.isPresent())
+                throw new ProjectException(ApplicationConstant.UN_AUTH_ACTION, "Access Denied");
+
+            List<ProjectUserStoryEntity> byProjectEntity = userStoryRepository.findByProjectEntity(byProjectId.get());
+            List<UserStoryDTO> userStoryDTOS = new ArrayList<>();
+            for (ProjectUserStoryEntity projectUserStoryEntity : byProjectEntity) {
+                userStoryDTOS.add(this.prepareUserStoryDTO(projectUserStoryEntity));
+            }
+            return userStoryDTOS;
+        } catch (Exception e) {
+            log.error("Method getProjectBacklog : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private UserStoryDTO prepareUserStoryDTO(ProjectUserStoryEntity userStoryEntity) {
+        log.info("Execute method prepareUserStoryDTO : @Param {} " + userStoryEntity);
+        try {
+            ProjectEntity p = userStoryEntity.getProjectEntity();
+            return new UserStoryDTO(
+                    userStoryEntity.getId(),
+                    new ProjectDTO(
+                            p.getId(),
+                            null,
+                            p.getProjectName(),
+                            p.getCreatedDate(),
+                            p.getModifiedDate(),
+                            this.prepareCorporateEmployeeDTO(p.getCreated_CorporateEmployeeEntity()),
+                            this.prepareCorporateEmployeeDTO(p.getModified_CorporateEmployeeEntity()),
+                            p.getStatusType()
+                    ),
+                    userStoryEntity.getTitle(),
+                    userStoryEntity.getDescription(),
+                    userStoryEntity.getCreatedDate(),
+                    userStoryEntity.getModifiedDate(),
+                    this.prepareCorporateEmployeeDTO(userStoryEntity.getCreatedBy()),
+                    this.prepareCorporateEmployeeDTO(userStoryEntity.getModifiedBy()),
+                    userStoryEntity.getStatusType()
+            );
+
+        } catch (Exception e) {
+            log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+
+    private CorporateEmployeeDTO prepareCorporateEmployeeDTO(CorporateEmployeeEntity c) {
+        log.info("Execute method prepareCorporateEmployeeDTO : @Param {} " + c);
+        try {
+                return new CorporateEmployeeDTO(
+                        c.getId(),
+                        new UserDTO(
+                                c.getUserEntity().getId(),
+                                c.getUserEntity().getRefNo(),
+                                c.getUserEntity().getFirstName(),
+                                c.getUserEntity().getLastName(),
+                                c.getUserEntity().getContactNumber(),
+                                c.getUserEntity().getEmail(),
+                                null,
+                                c.getUserEntity().getCreatedDate(),
+                                c.getUserEntity().getStatusType()
+                        ),
+                        null,
+                        c.getCorporateAccessType(),
+                        c.getCreatedDate(),
+                        c.getModifiedDate(),
+                        c.getAcceptedDate(),
+                        c.getStatusType()
+                );
+        } catch (Exception e) {
+            log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
             throw e;
         }
     }
