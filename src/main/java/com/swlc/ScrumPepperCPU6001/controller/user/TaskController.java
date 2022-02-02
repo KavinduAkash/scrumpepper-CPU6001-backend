@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectTaskRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectTasksAssignsRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,15 @@ public class TaskController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity createTask(@RequestBody AddProjectTaskRequestDTO addProjectTaskRequestDTO) {
         boolean newTask = taskService.createNewTask(addProjectTaskRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Task created successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity assignMembersToTask(@RequestBody AddProjectTasksAssignsRequestDTO addProjectTasksAssignsRequestDTO) {
+        boolean newTask = taskService.addMemberToTask(addProjectTasksAssignsRequestDTO.getTaskId(), addProjectTasksAssignsRequestDTO.getCorporateEmployeeId());
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Task created successfully", null),
                 HttpStatus.OK

@@ -21,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddProjectTaskRequestDTO {
-    private long projectId;
+    private long userStoryId;
     private String title;
     private UserStoryStatusType statusType;
     private List<Long> employees;
@@ -29,7 +29,7 @@ public class AddProjectTaskRequestDTO {
     @Override
     public String toString() {
         return "AddProjectTaskRequestDTO{" +
-                "projectId=" + projectId +
+                "userStoryId=" + userStoryId +
                 ", title='" + title + '\'' +
                 ", statusType=" + statusType +
                 ", employees=" + employees +

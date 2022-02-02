@@ -24,8 +24,8 @@ public class ProjectTaskEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="project_id")
-    private ProjectEntity projectEntity;
+    @JoinColumn(name="project_user_story_id")
+    private ProjectUserStoryEntity projectUserStoryEntity;
     @Column
     private String title;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -39,9 +39,10 @@ public class ProjectTaskEntity {
     @Enumerated(EnumType.STRING)
     private UserStoryStatusType statusType;
 
-    public ProjectTaskEntity(ProjectEntity projectEntity, String title, Date modifiedDate, CorporateEmployeeEntity createdBy,
-                             CorporateEmployeeEntity modifiedBy, UserStoryStatusType statusType) {
-        this.projectEntity = projectEntity;
+    public ProjectTaskEntity(ProjectUserStoryEntity projectUserStoryEntity, String title, Date modifiedDate,
+                             CorporateEmployeeEntity createdBy, CorporateEmployeeEntity modifiedBy,
+                             UserStoryStatusType statusType) {
+        this.projectUserStoryEntity = projectUserStoryEntity;
         this.title = title;
         this.modifiedDate = modifiedDate;
         this.createdBy = createdBy;
@@ -53,7 +54,7 @@ public class ProjectTaskEntity {
     public String toString() {
         return "ProjectTaskEntity{" +
                 "id=" + id +
-                ", projectEntity=" + projectEntity +
+                ", projectUserStoryEntity=" + projectUserStoryEntity +
                 ", title='" + title + '\'' +
                 ", modifiedDate=" + modifiedDate +
                 ", createdBy=" + createdBy +

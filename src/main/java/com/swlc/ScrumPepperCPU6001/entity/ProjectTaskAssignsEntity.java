@@ -33,14 +33,23 @@ public class ProjectTaskAssignsEntity {
     private Date createdDate;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date modifiedDate;
+    @JoinColumn(name="assigned_by")
+    private CorporateEmployeeEntity assignedBy;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="modified_by")
+    private CorporateEmployeeEntity modifiedBy;
+    @Enumerated(EnumType.STRING)
     private StatusType statusType;
 
     public ProjectTaskAssignsEntity(ProjectTaskEntity projectTaskEntity, ProjectMemberEntity projectMemberEntity,
-                                    Date createdDate, Date modifiedDate, StatusType statusType) {
+                                    Date createdDate, Date modifiedDate, CorporateEmployeeEntity assignedBy,
+                                    CorporateEmployeeEntity modifiedBy, StatusType statusType) {
         this.projectTaskEntity = projectTaskEntity;
         this.projectMemberEntity = projectMemberEntity;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
+        this.assignedBy = assignedBy;
+        this.modifiedBy = modifiedBy;
         this.statusType = statusType;
     }
 
@@ -52,6 +61,8 @@ public class ProjectTaskAssignsEntity {
                 ", projectMemberEntity=" + projectMemberEntity +
                 ", createdDate=" + createdDate +
                 ", modifiedDate=" + modifiedDate +
+                ", assignedBy=" + assignedBy +
+                ", modifiedBy=" + modifiedBy +
                 ", statusType=" + statusType +
                 '}';
     }
