@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.swlc.ScrumPepperCPU6001.enums.Priority;
 import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,10 +43,12 @@ public class ProjectUserStoryEntity {
     private CorporateEmployeeEntity modifiedBy;
     @Enumerated(EnumType.STRING)
     private UserStoryStatusType statusType;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 
     public ProjectUserStoryEntity(ProjectEntity projectEntity, String title, String description, Date createdDate,
-                                  Date modifiedDate, CorporateEmployeeEntity createdBy,
-                                  CorporateEmployeeEntity modifiedBy, UserStoryStatusType statusType) {
+                                  Date modifiedDate, CorporateEmployeeEntity createdBy, CorporateEmployeeEntity modifiedBy,
+                                  UserStoryStatusType statusType, Priority priority) {
         this.projectEntity = projectEntity;
         this.title = title;
         this.description = description;
@@ -54,6 +57,7 @@ public class ProjectUserStoryEntity {
         this.createdBy = createdBy;
         this.modifiedBy = modifiedBy;
         this.statusType = statusType;
+        this.priority = priority;
     }
 
     @Override
@@ -68,6 +72,7 @@ public class ProjectUserStoryEntity {
                 ", createdBy=" + createdBy +
                 ", modifiedBy=" + modifiedBy +
                 ", statusType=" + statusType +
+                ", priority=" + priority +
                 '}';
     }
 }

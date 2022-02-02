@@ -1,4 +1,5 @@
 package com.swlc.ScrumPepperCPU6001.dto;
+import com.swlc.ScrumPepperCPU6001.enums.Priority;
 import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author hp
@@ -25,4 +27,23 @@ public class UserStoryDTO {
     private CorporateEmployeeDTO createdBy;
     private CorporateEmployeeDTO modifiedBy;
     private UserStoryStatusType statusType;
+    private List<UserStoryLblDTO> userStoryLbl;
+    private Priority priority;
+
+    @Override
+    public String toString() {
+        return "UserStoryDTO{" +
+                "id=" + id +
+                ", project=" + project +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", createdDate=" + createdDate +
+                ", modifiedDate=" + modifiedDate +
+                ", createdBy=" + createdBy +
+                ", modifiedBy=" + modifiedBy +
+                ", statusType=" + statusType +
+                ", userStoryLbl=" + userStoryLbl +
+                ", priority=" + priority +
+                '}';
+    }
 }

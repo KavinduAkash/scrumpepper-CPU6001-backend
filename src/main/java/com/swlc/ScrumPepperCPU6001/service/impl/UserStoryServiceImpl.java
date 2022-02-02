@@ -1,10 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
-import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
-import com.swlc.ScrumPepperCPU6001.dto.ProjectDTO;
-import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
-import com.swlc.ScrumPepperCPU6001.dto.UserStoryDTO;
+import com.swlc.ScrumPepperCPU6001.dto.*;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserStoryStatusRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
@@ -106,6 +103,7 @@ public class UserStoryServiceImpl implements UserStoryService {
                 projectUserStoryEntity.setDescription(addUserStoryRequestDTO.getDescription());
                 projectUserStoryEntity.setModifiedDate(new Date());
                 projectUserStoryEntity.setModifiedBy(auth_user_admin.get());
+                projectUserStoryEntity.setPriority(addUserStoryRequestDTO.getPriority());
                 ProjectUserStoryEntity save = userStoryRepository.save(projectUserStoryEntity);
 
                 List<String> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
@@ -164,7 +162,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                                 new Date(),
                                 auth_user_admin.get(),
                                 auth_user_admin.get(),
-                                UserStoryStatusType.TODO
+                                UserStoryStatusType.TODO,
+                                addUserStoryRequestDTO.getPriority()
                         )
                 );
 
@@ -329,6 +328,7 @@ public class UserStoryServiceImpl implements UserStoryService {
         log.info("Execute method prepareUserStoryDTO : @Param {} " + (userStoryEntity.getId()==199?userStoryEntity.getDescription():""));
         try {
             ProjectEntity p = userStoryEntity.getProjectEntity();
+            List<UserStoryLblDTO> userStoryLblDTOS = prepareProjectUserStoryLblByUserStory(userStoryEntity, p);
             return new UserStoryDTO(
                     userStoryEntity.getId(),
                     new ProjectDTO(
@@ -347,7 +347,9 @@ public class UserStoryServiceImpl implements UserStoryService {
                     userStoryEntity.getModifiedDate(),
                     this.prepareCorporateEmployeeDTO(userStoryEntity.getCreatedBy()),
                     this.prepareCorporateEmployeeDTO(userStoryEntity.getModifiedBy()),
-                    userStoryEntity.getStatusType()
+                    userStoryEntity.getStatusType(),
+                    userStoryLblDTOS,
+                    userStoryEntity.getPriority()
             );
 
         } catch (Exception e) {
@@ -382,6 +384,35 @@ public class UserStoryServiceImpl implements UserStoryService {
                 );
         } catch (Exception e) {
             log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private List<UserStoryLblDTO> prepareProjectUserStoryLblByUserStory(ProjectUserStoryEntity projectUserStoryEntity, ProjectEntity projectEntity) {
+        log.info("Execute method prepareProjectUserStoryLblByUserStory : Params{} " + projectUserStoryEntity);
+        try {
+            List<ProjectUserStoryLabelEntity> userStoryLabelsByUserStoryId =
+                    projectUserStoryLabelRepository.getUserStoryLabelsByUserStoryId(projectUserStoryEntity);
+            //create project dto
+            ProjectDTO projectDTO = new ProjectDTO(
+                    projectEntity.getId(),
+                    null,
+                    projectEntity.getProjectName(),
+                    null,
+                    projectEntity.getModifiedDate(),
+                    null,
+                    null,
+                    projectEntity.getStatusType()
+            );
+
+            //prepare project user story lbl return list
+            List<UserStoryLblDTO> lbl_list =  new ArrayList<>();
+            for (ProjectUserStoryLabelEntity lbl : userStoryLabelsByUserStoryId) {
+                lbl_list.add(new UserStoryLblDTO(lbl.getId(), projectDTO, lbl.getUserStoryLabelEntity().getLabel()));
+            }
+            return lbl_list;
+        } catch (Exception e) {
+            log.error("Method prepareProjectUserStoryLbl : " + e.getMessage(), e);
             throw e;
         }
     }

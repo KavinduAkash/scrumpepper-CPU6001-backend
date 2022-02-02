@@ -1,5 +1,6 @@
 package com.swlc.ScrumPepperCPU6001.dto.request;
 
+import com.swlc.ScrumPepperCPU6001.enums.Priority;
 import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +23,7 @@ public class HandleUserStoryRequestDTO {
     private String description;
     private List<String> userStoryLabels;
     private UserStoryStatusType statusType;
+    private Priority priority;
 
     @Override
     public String toString() {
@@ -31,6 +33,8 @@ public class HandleUserStoryRequestDTO {
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", userStoryLabels=" + userStoryLabels +
+                ", statusType=" + statusType +
+                ", priority=" + priority +
                 '}';
     }
 }
