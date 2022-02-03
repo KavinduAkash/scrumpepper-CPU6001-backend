@@ -30,18 +30,18 @@ public class TaskController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity createTask(@RequestBody AddProjectTaskRequestDTO addProjectTaskRequestDTO) {
-        boolean newTask = taskService.createNewTask(addProjectTaskRequestDTO);
+        TaskDTO result = taskService.createNewTask(addProjectTaskRequestDTO);
         return new ResponseEntity<>(
-                new CommonResponseDTO(true, "Task created successfully", null),
+                new CommonResponseDTO(true, "Task created successfully", result),
                 HttpStatus.OK
         );
     }
 
     @PatchMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity assignMembersToTask(@RequestBody AddProjectTasksAssignsRequestDTO addProjectTasksAssignsRequestDTO) {
-        boolean newTask = taskService.addMemberToTask(addProjectTasksAssignsRequestDTO.getTaskId(), addProjectTasksAssignsRequestDTO.getCorporateEmployeeId());
+        TaskDTO result = taskService.addMemberToTask(addProjectTasksAssignsRequestDTO.getTaskId(), addProjectTasksAssignsRequestDTO.getCorporateEmployeeId());
         return new ResponseEntity<>(
-                new CommonResponseDTO(true, "Task created successfully", null),
+                new CommonResponseDTO(true, "Task created successfully", result),
                 HttpStatus.OK
         );
     }
