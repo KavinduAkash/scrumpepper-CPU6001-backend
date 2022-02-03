@@ -88,19 +88,30 @@ public class TasksServiceImpl implements TaskService {
                     );
             }
 
-            ProjectTaskEntity save = projectTaskRepository.save(
-                    new ProjectTaskEntity(
-                            projectUserStoryById.get(),
-                            task.getTitle(),
-                            new Date(),
-                            auth_user_admin.get(),
-                            auth_user_admin.get(),
-                            task.getStatusType()
-                    )
-            );
+            ProjectTaskEntity save = null;
 
+            if(task.getTaskId()!=0) {
+
+                Optional<ProjectTaskEntity> taskEntity = projectTaskRepository.findById(task.getTaskId());
+                if(!taskEntity.isPresent())
+                    throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Task not found");
+                ProjectTaskEntity projectTaskEntity = taskEntity.get();
+                projectTaskEntity.setTitle(task.getTitle());
+                projectTaskEntity.setStatusType(task.getStatusType());
+                save = projectTaskRepository.save(projectTaskEntity);
+            } else {
+                save = projectTaskRepository.save(
+                        new ProjectTaskEntity(
+                                projectUserStoryById.get(),
+                                task.getTitle(),
+                                new Date(),
+                                auth_user_admin.get(),
+                                auth_user_admin.get(),
+                                task.getStatusType()
+                        )
+                );
+            }
             return this.prepareTaskDTO(save);
-
         } catch (Exception e) {
             log.error("Method createNewTask : " + e.getMessage(), e);
             throw e;
@@ -289,7 +300,8 @@ public class TasksServiceImpl implements TaskService {
                     this.prepareCorporateEmployeeDTO(userStoryEntity.getModifiedBy()),
                     userStoryEntity.getStatusType(),
                     userStoryLblDTOS,
-                    userStoryEntity.getPriority()
+                    userStoryEntity.getPriority(),
+                    null
             );
 
         } catch (Exception e) {

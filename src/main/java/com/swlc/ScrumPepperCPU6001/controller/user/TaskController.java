@@ -29,7 +29,7 @@ public class TaskController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity createTask(@RequestBody AddProjectTaskRequestDTO addProjectTaskRequestDTO) {
+    public ResponseEntity handleTask(@RequestBody AddProjectTaskRequestDTO addProjectTaskRequestDTO) {
         TaskDTO result = taskService.createNewTask(addProjectTaskRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Task created successfully", result),

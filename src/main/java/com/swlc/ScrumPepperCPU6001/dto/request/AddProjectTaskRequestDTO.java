@@ -22,6 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 public class AddProjectTaskRequestDTO {
     private long userStoryId;
+    private long taskId;
     private String title;
     private UserStoryStatusType statusType;
     private List<Long> employees;
