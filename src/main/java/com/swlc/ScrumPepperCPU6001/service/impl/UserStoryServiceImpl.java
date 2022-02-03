@@ -12,6 +12,7 @@ import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
 import com.swlc.ScrumPepperCPU6001.repository.*;
+import com.swlc.ScrumPepperCPU6001.service.TaskService;
 import com.swlc.ScrumPepperCPU6001.service.UserStoryService;
 import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import lombok.extern.log4j.Log4j2;
@@ -36,10 +37,11 @@ public class UserStoryServiceImpl implements UserStoryService {
     private final UserStoryLabelRepository userStoryLabelRepository;
     private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
     private final CorporateRepository corporateRepository;
+    private final TaskService taskService;
     @Autowired
     private TokenValidator tokenValidator;
 
-    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository) {
+    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository, TaskService taskService) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
@@ -47,6 +49,7 @@ public class UserStoryServiceImpl implements UserStoryService {
         this.userStoryLabelRepository = userStoryLabelRepository;
         this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
         this.corporateRepository = corporateRepository;
+        this.taskService = taskService;
     }
 
     @Override
@@ -284,8 +287,6 @@ public class UserStoryServiceImpl implements UserStoryService {
             if(!byCorporateId.isPresent())
                 throw new CorporateException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate not found");
 
-
-
             Optional<CorporateEmployeeEntity> auth_user_admin =
                     corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
                             userAdminEntity,
@@ -349,7 +350,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                     this.prepareCorporateEmployeeDTO(userStoryEntity.getModifiedBy()),
                     userStoryEntity.getStatusType(),
                     userStoryLblDTOS,
-                    userStoryEntity.getPriority()
+                    userStoryEntity.getPriority(),
+                    taskService.getAllTasksOfProject(userStoryEntity.getId())
             );
 
         } catch (Exception e) {

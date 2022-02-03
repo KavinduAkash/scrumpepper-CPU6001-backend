@@ -33,6 +33,7 @@ public class ProjectTaskAssignsEntity {
     private Date createdDate;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date modifiedDate;
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="assigned_by")
     private CorporateEmployeeEntity assignedBy;
     @ManyToOne(cascade = CascadeType.ALL)

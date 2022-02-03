@@ -29,6 +29,7 @@ public class UserStoryDTO {
     private UserStoryStatusType statusType;
     private List<UserStoryLblDTO> userStoryLbl;
     private Priority priority;
+    private List<TaskDTO> tasks;
 
     @Override
     public String toString() {
@@ -44,6 +45,7 @@ public class UserStoryDTO {
                 ", statusType=" + statusType +
                 ", userStoryLbl=" + userStoryLbl +
                 ", priority=" + priority +
+                ", tasks=" + tasks +
                 '}';
     }
 }
