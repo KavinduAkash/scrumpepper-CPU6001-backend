@@ -58,7 +58,7 @@ public class TasksServiceImpl implements TaskService {
         log.info("Execute method createNewTask : email : " + task.toString());
         try {
             Optional<ProjectUserStoryEntity> projectUserStoryById = userStoryRepository.findById(task.getUserStoryId());
-            if(projectUserStoryById.isPresent())
+            if(!projectUserStoryById.isPresent())
                 throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
             ProjectEntity projectEntity = projectUserStoryById.get().getProjectEntity();
             CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
