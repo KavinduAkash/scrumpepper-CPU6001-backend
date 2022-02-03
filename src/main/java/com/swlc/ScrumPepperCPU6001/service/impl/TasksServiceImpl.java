@@ -54,7 +54,7 @@ public class TasksServiceImpl implements TaskService {
     }
 
     @Override
-    public boolean createNewTask(AddProjectTaskRequestDTO task) {
+    public TaskDTO createNewTask(AddProjectTaskRequestDTO task) {
         log.info("Execute method createNewTask : email : " + task.toString());
         try {
             Optional<ProjectUserStoryEntity> projectUserStoryById = userStoryRepository.findById(task.getUserStoryId());
@@ -88,7 +88,7 @@ public class TasksServiceImpl implements TaskService {
                     );
             }
 
-            projectTaskRepository.save(
+            ProjectTaskEntity save = projectTaskRepository.save(
                     new ProjectTaskEntity(
                             projectUserStoryById.get(),
                             task.getTitle(),
@@ -99,7 +99,7 @@ public class TasksServiceImpl implements TaskService {
                     )
             );
 
-            return true;
+            return this.prepareTaskDTO(save);
 
         } catch (Exception e) {
             log.error("Method createNewTask : " + e.getMessage(), e);
@@ -108,7 +108,7 @@ public class TasksServiceImpl implements TaskService {
     }
 
     @Override
-    public boolean addMemberToTask(long taskId, long id) {
+    public TaskDTO addMemberToTask(long taskId, long id) {
         log.info("Execute method addMemberToTask : id : " + id);
         try {
             Optional<ProjectTaskEntity> projectTaskById = projectTaskRepository.findById(taskId);
@@ -159,8 +159,9 @@ public class TasksServiceImpl implements TaskService {
             }
 
             ProjectTaskAssignsEntity save = projectTaskAssignsRepository.save(new ProjectTaskAssignsEntity(projectTaskById.get(), projectMember, new Date(), new Date(), auth_user_admin.get(), auth_user_admin.get(), StatusType.ACTIVE));
+            Optional<ProjectTaskEntity> updatedTaskEntity = projectTaskRepository.findById(taskId);
 
-            return true;
+            return this.prepareTaskDTO(updatedTaskEntity.get());
         } catch (Exception e) {
             log.error("Method addMemberToTask : " + e.getMessage(), e);
             throw e;

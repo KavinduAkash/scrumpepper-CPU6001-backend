@@ -9,7 +9,7 @@ import java.util.List;
  * @author hp
  */
 public interface TaskService {
-    boolean createNewTask(AddProjectTaskRequestDTO task);
-    boolean addMemberToTask(long taskId, long id);
+    TaskDTO createNewTask(AddProjectTaskRequestDTO task);
+    TaskDTO addMemberToTask(long taskId, long id);
     List<TaskDTO> getAllTasksOfProject(long userStoryId);
 }
