@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
+import com.swlc.ScrumPepperCPU6001.dto.*;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectTaskRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.*;
@@ -13,7 +14,9 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -29,19 +32,25 @@ public class TasksServiceImpl implements TaskService {
     private final ProjectMemberRepository projectMemberRepository;
     private final ProjectTaskRepository projectTaskRepository;
     private final ProjectTaskAssignsRepository projectTaskAssignsRepository;
+    private final UserStoryLabelRepository userStoryLabelRepository;
+    private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
+    private final CorporateRepository corporateRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
     public TasksServiceImpl(UserStoryRepository userStoryRepository,
                             ProjectRepository projectRepository,
                             CorporateEmployeeRepository corporateEmployeeRepository,
-                            ProjectMemberRepository projectMemberRepository, ProjectTaskRepository projectTaskRepository, ProjectTaskAssignsRepository projectTaskAssignsRepository) {
+                            ProjectMemberRepository projectMemberRepository, ProjectTaskRepository projectTaskRepository, ProjectTaskAssignsRepository projectTaskAssignsRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.projectTaskRepository = projectTaskRepository;
         this.projectTaskAssignsRepository = projectTaskAssignsRepository;
+        this.userStoryLabelRepository = userStoryLabelRepository;
+        this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
+        this.corporateRepository = corporateRepository;
     }
 
     @Override
@@ -158,5 +167,162 @@ public class TasksServiceImpl implements TaskService {
         }
     }
 
+    @Override
+    public List<TaskDTO> getAllTasksOfProject(long userStoryId) {
+        log.info("Execute method getAllTasksOfProject : userStoryId : " + userStoryId);
+        try {
+            Optional<ProjectUserStoryEntity> projectUserStoryOptional = userStoryRepository.findById(userStoryId);
+            if(!projectUserStoryOptional.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
+            List<ProjectTaskEntity> allByProjectUserStoryEntity = projectTaskRepository.findAllByProjectUserStoryEntity(projectUserStoryOptional.get());
+            return this.prepareTaskDTOList(allByProjectUserStoryEntity);
+        } catch (Exception e) {
+            log.error("Method getAllTasksOfProject : " + e.getMessage(), e);
+            throw e;
+        }
+    }
 
+    private List<TaskDTO> prepareTaskDTOList(List<ProjectTaskEntity> projectTaskEntities) {
+        log.info("Execute method prepareTaskDTOList : Params{} " + projectTaskEntities);
+        try {
+            List<TaskDTO> taskDTOS = new ArrayList<>();
+            for (ProjectTaskEntity projectTaskEntity : projectTaskEntities) {
+                taskDTOS.add(this.prepareTaskDTO(projectTaskEntity));
+            }
+            return taskDTOS;
+        } catch (Exception e) {
+            log.error("Method prepareTaskDTOList : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private TaskDTO prepareTaskDTO(ProjectTaskEntity projectTaskEntity) {
+        log.info("Execute method prepareTaskDTO : param{} " + projectTaskEntity);
+        try {
+            return new TaskDTO(
+                    projectTaskEntity.getId(),
+                    this.prepareUserStoryDTO(projectTaskEntity.getProjectUserStoryEntity()),
+                    projectTaskEntity.getTitle(),
+                    projectTaskEntity.getModifiedDate(),
+                    this.prepareCorporateEmployeeDTO(projectTaskEntity.getCreatedBy()),
+                    this.prepareCorporateEmployeeDTO(projectTaskEntity.getModifiedBy()),
+                    projectTaskEntity.getStatusType(),
+                    this.prepareTaskMembershipList(projectTaskEntity)
+            );
+        } catch (Exception e) {
+            log.error("Method prepareTaskDTO : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private List<ProjectMemberDTO> prepareTaskMembershipList(ProjectTaskEntity projectTaskEntity) {
+        List<ProjectTaskAssignsEntity> byProjectTaskEntity = projectTaskAssignsRepository.findByProjectTaskEntity(projectTaskEntity);
+        List<ProjectMemberDTO> projectMemberDTOS = new ArrayList<>();
+        for (ProjectTaskAssignsEntity projectTaskAssignsEntity : byProjectTaskEntity) {
+            ProjectMemberEntity m = projectTaskAssignsEntity.getProjectMemberEntity();
+            projectMemberDTOS.add(
+                    new ProjectMemberDTO(
+                            m.getId(),
+                            this.prepareCorporateEmployeeDTO(m.getCorporateEmployeeEntity()),
+                            m.getAssignedDate(),
+                            m.getModifiedDate(),
+                            m.getScrumRole(),
+                            m.getStatusType()
+                    )
+            );
+        }
+        return projectMemberDTOS;
+    }
+
+    private CorporateEmployeeDTO prepareCorporateEmployeeDTO(CorporateEmployeeEntity c) {
+//        log.info("Execute method prepareCorporateEmployeeDTO : @Param {} " + c);
+        try {
+            return new CorporateEmployeeDTO(
+                    c.getId(),
+                    new UserDTO(
+                            c.getUserEntity().getId(),
+                            c.getUserEntity().getRefNo(),
+                            c.getUserEntity().getFirstName(),
+                            c.getUserEntity().getLastName(),
+                            c.getUserEntity().getContactNumber(),
+                            c.getUserEntity().getEmail(),
+                            null,
+                            c.getUserEntity().getCreatedDate(),
+                            c.getUserEntity().getStatusType()
+                    ),
+                    null,
+                    c.getCorporateAccessType(),
+                    c.getCreatedDate(),
+                    c.getModifiedDate(),
+                    c.getAcceptedDate(),
+                    c.getStatusType()
+            );
+        } catch (Exception e) {
+            log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private UserStoryDTO prepareUserStoryDTO(ProjectUserStoryEntity userStoryEntity) {
+        log.info("Execute method prepareUserStoryDTO : @Param {} " + (userStoryEntity.getId()==199?userStoryEntity.getDescription():""));
+        try {
+            ProjectEntity p = userStoryEntity.getProjectEntity();
+            List<UserStoryLblDTO> userStoryLblDTOS = prepareProjectUserStoryLblByUserStory(userStoryEntity, p);
+            return new UserStoryDTO(
+                    userStoryEntity.getId(),
+                    new ProjectDTO(
+                            p.getId(),
+                            null,
+                            p.getProjectName(),
+                            p.getCreatedDate(),
+                            p.getModifiedDate(),
+                            this.prepareCorporateEmployeeDTO(p.getCreated_CorporateEmployeeEntity()),
+                            this.prepareCorporateEmployeeDTO(p.getModified_CorporateEmployeeEntity()),
+                            p.getStatusType()
+                    ),
+                    userStoryEntity.getTitle(),
+                    userStoryEntity.getDescription(),
+                    userStoryEntity.getCreatedDate(),
+                    userStoryEntity.getModifiedDate(),
+                    this.prepareCorporateEmployeeDTO(userStoryEntity.getCreatedBy()),
+                    this.prepareCorporateEmployeeDTO(userStoryEntity.getModifiedBy()),
+                    userStoryEntity.getStatusType(),
+                    userStoryLblDTOS,
+                    userStoryEntity.getPriority()
+            );
+
+        } catch (Exception e) {
+            log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private List<UserStoryLblDTO> prepareProjectUserStoryLblByUserStory(ProjectUserStoryEntity projectUserStoryEntity, ProjectEntity projectEntity) {
+        log.info("Execute method prepareProjectUserStoryLblByUserStory : Params{} " + projectUserStoryEntity);
+        try {
+            List<ProjectUserStoryLabelEntity> userStoryLabelsByUserStoryId =
+                    projectUserStoryLabelRepository.getUserStoryLabelsByUserStoryId(projectUserStoryEntity);
+            //create project dto
+            ProjectDTO projectDTO = new ProjectDTO(
+                    projectEntity.getId(),
+                    null,
+                    projectEntity.getProjectName(),
+                    null,
+                    projectEntity.getModifiedDate(),
+                    null,
+                    null,
+                    projectEntity.getStatusType()
+            );
+
+            //prepare project user story lbl return list
+            List<UserStoryLblDTO> lbl_list =  new ArrayList<>();
+            for (ProjectUserStoryLabelEntity lbl : userStoryLabelsByUserStoryId) {
+                lbl_list.add(new UserStoryLblDTO(lbl.getId(), projectDTO, lbl.getUserStoryLabelEntity().getLabel()));
+            }
+            return lbl_list;
+        } catch (Exception e) {
+            log.error("Method prepareProjectUserStoryLbl : " + e.getMessage(), e);
+            throw e;
+        }
+    }
 }

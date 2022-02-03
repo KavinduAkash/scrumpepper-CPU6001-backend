@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.dto;
 
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
 import com.swlc.ScrumPepperCPU6001.enums.StatusType;
+import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,14 +18,14 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskAssignsDTO {
+public class TaskDTO {
     private long id;
     private UserStoryDTO userStory;
     private String title;
     private Date modifiedDate;
-    private CorporateEmployeeEntity createdBy;
-    private CorporateEmployeeEntity modifiedBy;
-    private StatusType statusType;
+    private CorporateEmployeeDTO createdBy;
+    private CorporateEmployeeDTO modifiedBy;
+    private UserStoryStatusType statusType;
     private List<ProjectMemberDTO> assigns;
 
     @Override
