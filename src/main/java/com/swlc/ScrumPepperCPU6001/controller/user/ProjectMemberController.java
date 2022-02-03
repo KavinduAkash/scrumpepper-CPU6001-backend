@@ -5,6 +5,7 @@ import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.GetTaskEmployeeDTO;
 import com.swlc.ScrumPepperCPU6001.service.ProjectMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -67,7 +68,7 @@ public class ProjectMemberController {
 
     @GetMapping(value = "/task/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getTaskMember(@PathVariable long id) {
-        List<CorporateEmployeeDTO> result = projectMemberService.getProjectMember(id);
+        GetTaskEmployeeDTO result = projectMemberService.getTaskMembers(id);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Project members found successfully", result),
                 HttpStatus.OK
