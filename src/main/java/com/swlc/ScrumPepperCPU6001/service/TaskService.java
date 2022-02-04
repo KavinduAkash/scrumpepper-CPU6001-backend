@@ -11,5 +11,6 @@ import java.util.List;
 public interface TaskService {
     TaskDTO createNewTask(AddProjectTaskRequestDTO task);
     TaskDTO addMemberToTask(long taskId, long id);
+    TaskDTO removedMemberFromTask(long taskId, long id);
     List<TaskDTO> getAllTasksOfProject(long userStoryId);
 }

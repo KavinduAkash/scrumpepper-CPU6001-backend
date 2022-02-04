@@ -46,6 +46,15 @@ public class TaskController {
         );
     }
 
+    @PatchMapping(value = "/remove", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity assignMembersRemove(@RequestBody AddProjectTasksAssignsRequestDTO addProjectTasksAssignsRequestDTO) {
+        TaskDTO result = taskService.removedMemberFromTask(addProjectTasksAssignsRequestDTO.getTaskId(), addProjectTasksAssignsRequestDTO.getCorporateEmployeeId());
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Task created successfully", result),
+                HttpStatus.OK
+        );
+    }
+
     @GetMapping(value = "{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getAllTasks(@PathVariable long id) {
         List<TaskDTO> results = taskService.getAllTasksOfProject(id);

@@ -7,10 +7,7 @@ import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.GetTaskEmployeeDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
-import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
-import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
-import com.swlc.ScrumPepperCPU6001.enums.ProjectMemberStatusType;
-import com.swlc.ScrumPepperCPU6001.enums.ScrumRoles;
+import com.swlc.ScrumPepperCPU6001.enums.*;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateEmployeeException;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
@@ -263,11 +260,12 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             ProjectEntity projectEntity = projectTaskEntity.getProjectUserStoryEntity().getProjectEntity();
             CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
 
-            List<CorporateEmployeeEntity> taskAssigns = projectTaskAssignsRepository.getTaskAssignsCorporateEmployees(projectTaskEntity);
-            List<CorporateEmployeeEntity> projectMembers = projectTaskAssignsRepository.getTaskNotAssignsProjectCorporateEmployees(projectTaskEntity, projectEntity);
-            List<CorporateEmployeeEntity> otherCorporateEmployees = projectTaskAssignsRepository.getTaskNotAssignsProjectCorporateEmployees(corporateEntity, projectEntity);
+            List<CorporateEmployeeEntity> taskAssigns = projectTaskAssignsRepository.getTaskAssignsCorporateEmployees(StatusType.ACTIVE, projectTaskEntity, ProjectMemberStatusType.ACTIVE);
+            List<CorporateEmployeeEntity> projectMembers = projectTaskAssignsRepository.getTaskNotAssignsProjectCorporateEmployees(StatusType.ACTIVE, ProjectMemberStatusType.ACTIVE, projectTaskEntity, projectEntity, ProjectMemberStatusType.ACTIVE);
+            List<CorporateEmployeeEntity> otherCorporateEmployees = projectTaskAssignsRepository.getTaskNotAssignsProjectCorporateEmployees(CorporateAccessStatusType.ACTIVE, corporateEntity, projectEntity, ProjectMemberStatusType.ACTIVE);
 
-            return new GetTaskEmployeeDTO(
+            return
+                    new GetTaskEmployeeDTO(
                     this.prepareCorporateEmployeeDTOList(taskAssigns),
                     this.prepareCorporateEmployeeDTOList(projectMembers),
                     this.prepareCorporateEmployeeDTOList(otherCorporateEmployees)
