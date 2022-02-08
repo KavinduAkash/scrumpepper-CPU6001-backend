@@ -1,15 +1,19 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
+import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.GetTaskEmployeeDTO;
 import com.swlc.ScrumPepperCPU6001.service.ProjectMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author hp
@@ -52,4 +56,24 @@ public class ProjectMemberController {
                 HttpStatus.OK
         );
     }
+
+    @GetMapping(value = "/project/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getProjectMember(@PathVariable long id) {
+        List<CorporateEmployeeDTO> result = projectMemberService.getProjectMember(id);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project members found successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/task/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getTaskMember(@PathVariable long id) {
+        GetTaskEmployeeDTO result = projectMemberService.getTaskMembers(id);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project members found successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+
 }

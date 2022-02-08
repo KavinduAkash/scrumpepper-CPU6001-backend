@@ -1,5 +1,6 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
+import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
@@ -56,6 +57,15 @@ public class UserController {
         boolean result = userService.deleteUser();
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your account deleted successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getUserDetails() {
+        UserDTO result = userService.getUserDetailsByToken();
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Found user details successfully", result),
                 HttpStatus.OK
         );
     }

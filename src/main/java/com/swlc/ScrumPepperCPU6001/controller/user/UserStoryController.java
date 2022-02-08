@@ -1,5 +1,6 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
+import com.swlc.ScrumPepperCPU6001.dto.UserStoryDTO;
 import com.swlc.ScrumPepperCPU6001.dto.UserStoryLblDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserStoryLblRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
@@ -25,19 +26,20 @@ import java.util.List;
 public class UserStoryController {
 
     private final UserStoryService userStoryService;
-    private final UserStoryLblService addUserStoryRequestDTO;
+    private final UserStoryLblService userStoryLblService;
 
     @Autowired
-    public UserStoryController(UserStoryService userStoryService, UserStoryLblService addUserStoryRequestDTO) {
+    public UserStoryController(UserStoryService userStoryService, UserStoryLblService userStoryLblService) {
         this.userStoryService = userStoryService;
-        this.addUserStoryRequestDTO = addUserStoryRequestDTO;
+        this.userStoryLblService = userStoryLblService;
     }
+
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity handleUserStory(@RequestBody HandleUserStoryRequestDTO addUserStoryRequestDTO) {
-        boolean result = userStoryService.handleUserStory(addUserStoryRequestDTO);
+        UserStoryDTO result = userStoryService.handleUserStory(addUserStoryRequestDTO);
         return new ResponseEntity<>(
-                new CommonResponseDTO(true, "User story created successfully", null),
+                new CommonResponseDTO(true, "User story created successfully", result),
                 HttpStatus.OK
         );
     }
@@ -57,10 +59,30 @@ public class UserStoryController {
 
     @PostMapping(value = "/lbl" , consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addUserStoryLbl(@RequestBody AddUserStoryLblRequestDTO addUserStoryLblRequestDTO) {
-        List<UserStoryLblDTO> result = addUserStoryRequestDTO.createNewUserStoryLbl(addUserStoryLblRequestDTO);
+        List<UserStoryLblDTO> result = userStoryLblService.createNewUserStoryLbl(addUserStoryLblRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "User story label created successfully", result),
                 HttpStatus.OK
         );
     }
+
+    @GetMapping(value = "/get-project-lbl" , produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity addUserStoryLbl(@RequestParam long id) {
+        List<UserStoryLblDTO> result = userStoryLblService.getAllProjectUserStoryLbl(id);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project user story labels found successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/get-project" , produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity addUserStoryLbl(@RequestParam long id, @RequestParam long corporate) {
+        List<UserStoryDTO> result = userStoryService.getProjectBacklog(id, corporate);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "User stories found successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+
 }

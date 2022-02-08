@@ -2,8 +2,11 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.constant.EmailTextConstant;
+import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
+import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.ApproveRejectInvitationRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.SearchEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeInvitationEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEntity;
@@ -27,7 +30,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.MessagingException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -169,6 +174,50 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
             return true;
         } catch (Exception e) {
             log.error("Method approveRejectCorporateEmployeeInvitation : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<CorporateEmployeeDTO> searchCorporateEmployee(SearchEmployeeRequestDTO searchEmployeeRequestDTO) {
+        log.info("Execute method searchCorporateEmployee : searchEmployeeRequestDTO : " + searchEmployeeRequestDTO.toString());
+        try {
+            Optional<CorporateEntity> corporateById = corporateRepository.findById(searchEmployeeRequestDTO.getCorporateId());
+            if(!corporateById.isPresent())
+                throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND,
+                        "Corporate account not found");
+            CorporateEntity corporateEntity = corporateById.get();
+            List<CorporateEmployeeEntity> corporateEmployeeEntities =
+                    corporateEmployeeRepository.searchCorporateEmployeeEntity(
+                            corporateEntity.getId(),
+                            searchEmployeeRequestDTO.getSearch()
+                    );
+            List<CorporateEmployeeDTO> corporateEmployeeDTOS =  new ArrayList<>();
+            for (CorporateEmployeeEntity e : corporateEmployeeEntities) {
+                corporateEmployeeDTOS.add(new CorporateEmployeeDTO(
+                        e.getId(),
+                        new UserDTO(
+                                e.getUserEntity().getId(),
+                                e.getUserEntity().getRefNo(),
+                                e.getUserEntity().getFirstName(),
+                                e.getUserEntity().getLastName(),
+                                e.getUserEntity().getContactNumber(),
+                                e.getUserEntity().getEmail(),
+                                null,
+                                e.getUserEntity().getCreatedDate(),
+                                e.getUserEntity().getStatusType()
+                        ),
+                        null,
+                        e.getCorporateAccessType(),
+                        e.getCreatedDate(),
+                        e.getModifiedDate(),
+                        e.getAcceptedDate(),
+                        e.getStatusType()
+                ));
+            }
+            return corporateEmployeeDTOS;
+        } catch (Exception e) {
+            log.error("Method searchCorporateEmployee : " + e.getMessage(), e);
             throw e;
         }
     }

@@ -1,12 +1,16 @@
 package com.swlc.ScrumPepperCPU6001.dto.request;
 
-import com.swlc.ScrumPepperCPU6001.enums.Priority;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
+import com.swlc.ScrumPepperCPU6001.entity.ProjectEntity;
 import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -16,25 +20,20 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class HandleUserStoryRequestDTO {
-    private long projectId;
+public class AddProjectTaskRequestDTO {
     private long userStoryId;
+    private long taskId;
     private String title;
-    private String description;
-    private List<String> userStoryLabels;
     private UserStoryStatusType statusType;
-    private Priority priority;
+    private List<Long> employees;
 
     @Override
     public String toString() {
-        return "HandleUserStoryRequestDTO{" +
-                "projectId=" + projectId +
-                ", userStoryId=" + userStoryId +
+        return "AddProjectTaskRequestDTO{" +
+                "userStoryId=" + userStoryId +
                 ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", userStoryLabels=" + userStoryLabels +
                 ", statusType=" + statusType +
-                ", priority=" + priority +
+                ", employees=" + employees +
                 '}';
     }
 }

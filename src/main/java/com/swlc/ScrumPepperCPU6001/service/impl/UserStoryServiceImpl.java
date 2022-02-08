@@ -1,6 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
+import com.swlc.ScrumPepperCPU6001.dto.*;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserStoryStatusRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
@@ -11,6 +12,7 @@ import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
 import com.swlc.ScrumPepperCPU6001.repository.*;
+import com.swlc.ScrumPepperCPU6001.service.TaskService;
 import com.swlc.ScrumPepperCPU6001.service.UserStoryService;
 import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import lombok.extern.log4j.Log4j2;
@@ -34,20 +36,24 @@ public class UserStoryServiceImpl implements UserStoryService {
     private final ProjectMemberRepository projectMemberRepository;
     private final UserStoryLabelRepository userStoryLabelRepository;
     private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
+    private final CorporateRepository corporateRepository;
+    private final TaskService taskService;
     @Autowired
     private TokenValidator tokenValidator;
 
-    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository) {
+    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository, TaskService taskService) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.userStoryLabelRepository = userStoryLabelRepository;
         this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
+        this.corporateRepository = corporateRepository;
+        this.taskService = taskService;
     }
 
     @Override
-    public boolean handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO) {
+    public UserStoryDTO handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO) {
         log.info("Execute method createNewUserStory : addUserStoryRequestDTO : " + addUserStoryRequestDTO.toString());
         try {
             Optional<ProjectEntity> projectById = projectRepository.findById(addUserStoryRequestDTO.getProjectId());
@@ -88,6 +94,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                     );
             }
 
+            long user_story_id = addUserStoryRequestDTO.getUserStoryId();
+
             if(addUserStoryRequestDTO.getUserStoryId()!=0) {
                 Optional<ProjectUserStoryEntity> byId =
                         userStoryRepository.findById(addUserStoryRequestDTO.getUserStoryId());
@@ -98,45 +106,50 @@ public class UserStoryServiceImpl implements UserStoryService {
                 projectUserStoryEntity.setDescription(addUserStoryRequestDTO.getDescription());
                 projectUserStoryEntity.setModifiedDate(new Date());
                 projectUserStoryEntity.setModifiedBy(auth_user_admin.get());
+                projectUserStoryEntity.setPriority(addUserStoryRequestDTO.getPriority());
                 ProjectUserStoryEntity save = userStoryRepository.save(projectUserStoryEntity);
 
-                List<Long> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
-                List<Long> userStoryLabelIdsByUserStoryId = projectUserStoryLabelRepository.getUserStoryLabelIdsByUserStoryId(save);
+                List<String> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
+                List<ProjectUserStoryLabelEntity> userStoryLabelIdsByUserStoryId = projectUserStoryLabelRepository.getUserStoryLabelsByUserStoryId(save);
 
-                List<Long> userStoryLabelSave = new ArrayList<>();
-                List<Long> userStoryLabelDelete = new ArrayList<>();
+                List<String> userStoryLabelSave = new ArrayList<>();
+                List<ProjectUserStoryLabelEntity> userStoryLabelDelete = new ArrayList<>();
 
-                for (long id : userStoryLabels) {
+                for (String lbl : userStoryLabels) {
                     boolean alreadyExist = false;
                     for (int i = 0; i<userStoryLabelIdsByUserStoryId.size(); i++) {
-                        if(id==userStoryLabelIdsByUserStoryId.get(i)) {
+                        if((userStoryLabelIdsByUserStoryId.get(i).getUserStoryLabelEntity().getLabel().toUpperCase()).equals(lbl.toUpperCase())) {
                             alreadyExist = true;
                         }
                     }
                     if(!alreadyExist) {
-                        userStoryLabelSave.add(id);
+                        userStoryLabelSave.add(lbl);
                     }
                 }
 
-                for (long id : userStoryLabelIdsByUserStoryId) {
+                for (ProjectUserStoryLabelEntity projectUserStoryLabelEntity : userStoryLabelIdsByUserStoryId) {
                     boolean alreadyExist = false;
                     for(int j = 0; j<userStoryLabels.size(); j++) {
-                        if(id == userStoryLabels.get(j)) {
+                        if((userStoryLabels.get(j).toUpperCase()).equals(projectUserStoryLabelEntity.getUserStoryLabelEntity().getLabel())) {
                             alreadyExist = true;
                         }
                     }
                     if(!alreadyExist) {
-                        userStoryLabelDelete.add(id);
+                        userStoryLabelDelete.add(projectUserStoryLabelEntity);
                     }
                 }
 
                 if(!userStoryLabelDelete.isEmpty()) {
-                    projectUserStoryLabelRepository.deleteAllById(userStoryLabelDelete);
+                    projectUserStoryLabelRepository.deleteAll(userStoryLabelDelete);
                 }
                 if(!userStoryLabelSave.isEmpty()) {
-                    List<UserStoryLabelEntity> allById = userStoryLabelRepository.findAllById(userStoryLabelSave);
+                    List<UserStoryLabelEntity> userStoryLabelEntities = new ArrayList<>();
+                    for (String userStoryLbl : userStoryLabelSave) {
+                        userStoryLabelEntities.add(new UserStoryLabelEntity(projectEntity, userStoryLbl));
+                    }
+                    List<UserStoryLabelEntity> userStoryLabelEntities1 = userStoryLabelRepository.saveAll(userStoryLabelEntities);
                     List<ProjectUserStoryLabelEntity> projectUserStories =  new ArrayList<>();
-                    for (UserStoryLabelEntity u : allById) {
+                    for (UserStoryLabelEntity u : userStoryLabelEntities1) {
                         projectUserStories.add(new ProjectUserStoryLabelEntity(save, u));
                     }
                     projectUserStoryLabelRepository.saveAll(projectUserStories);
@@ -152,23 +165,40 @@ public class UserStoryServiceImpl implements UserStoryService {
                                 new Date(),
                                 auth_user_admin.get(),
                                 auth_user_admin.get(),
-                                UserStoryStatusType.TODO
+                                UserStoryStatusType.TODO,
+                                addUserStoryRequestDTO.getPriority()
                         )
                 );
 
                 List<ProjectUserStoryLabelEntity> projectUserStoryLabelEntityList =  new ArrayList<>();
-                List<Long> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
-                for (long id : userStoryLabels) {
-                    Optional<UserStoryLabelEntity> byId = userStoryLabelRepository.findById(id);
-                    if(!byId.isPresent())
-                        throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story label not found");
-                    projectUserStoryLabelEntityList.add(new ProjectUserStoryLabelEntity(save, byId.get()));
+                List<String> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
+
+                List<UserStoryLabelEntity> byId = userStoryLabelRepository.findByProjectEntity(projectEntity);
+
+
+                for (String lbl : userStoryLabels) {
+                    for (UserStoryLabelEntity userStoryLabelEntity : byId) {
+                        boolean alreadyExist = false;
+                        if((userStoryLabelEntity.getLabel().toUpperCase()).equals(lbl)) {
+                            alreadyExist= true;
+                        }
+                        if(!alreadyExist) {
+                            UserStoryLabelEntity save1 = userStoryLabelRepository.save(new UserStoryLabelEntity(projectEntity, lbl));
+                            projectUserStoryLabelEntityList.add(new ProjectUserStoryLabelEntity(save, save1));
+                        } else {
+                            projectUserStoryLabelEntityList.add(new ProjectUserStoryLabelEntity(save, userStoryLabelEntity));
+                        }
+                    }
                 }
 
                 projectUserStoryLabelRepository.saveAll(projectUserStoryLabelEntityList);
+                user_story_id = save.getId();
             }
 
-            return true;
+            Optional<ProjectUserStoryEntity> byId = userStoryRepository.findById(user_story_id);
+            ProjectUserStoryEntity projectUserStoryEntity = byId.get();
+            UserStoryDTO userStoryDTO = this.prepareUserStoryDTO(projectUserStoryEntity);
+            return userStoryDTO;
         } catch (Exception e) {
             log.error("Method createNewUserStory : " + e.getMessage(), e);
             throw e;
@@ -244,6 +274,147 @@ public class UserStoryServiceImpl implements UserStoryService {
             return true;
         } catch (Exception e) {
             log.error("Method updateUserStoryStatus : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<UserStoryDTO> getProjectBacklog(long id, long corporateId) {
+        log.info("Execute method getProjectBacklog : id: " + id + ", corporateId: " + corporateId);
+        try {
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEntity> byCorporateId = corporateRepository.findById(corporateId);
+            if(!byCorporateId.isPresent())
+                throw new CorporateException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate not found");
+
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            byCorporateId.get(),
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+
+            CorporateEmployeeEntity corporateEmployeeEntity = auth_user_admin.get();
+            Optional<ProjectEntity> byProjectId = projectRepository.findById(id);
+            if(!byProjectId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+
+            Optional<ProjectMemberEntity> projectMemberOptional =
+                    projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                            byProjectId.get(),
+                            corporateEmployeeEntity
+                    );
+
+            if(!projectMemberOptional.isPresent())
+                throw new ProjectException(ApplicationConstant.UN_AUTH_ACTION, "Access Denied");
+
+            List<ProjectUserStoryEntity> byProjectEntity = userStoryRepository.findByProjectEntity(byProjectId.get());
+            List<UserStoryDTO> userStoryDTOS = new ArrayList<>();
+            for (ProjectUserStoryEntity projectUserStoryEntity : byProjectEntity) {
+                userStoryDTOS.add(this.prepareUserStoryDTO(projectUserStoryEntity));
+            }
+            return userStoryDTOS;
+        } catch (Exception e) {
+            log.error("Method getProjectBacklog : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private UserStoryDTO prepareUserStoryDTO(ProjectUserStoryEntity userStoryEntity) {
+        log.info("Execute method prepareUserStoryDTO : @Param {} " + (userStoryEntity.getId()==199?userStoryEntity.getDescription():""));
+        try {
+            ProjectEntity p = userStoryEntity.getProjectEntity();
+            List<UserStoryLblDTO> userStoryLblDTOS = prepareProjectUserStoryLblByUserStory(userStoryEntity, p);
+            return new UserStoryDTO(
+                    userStoryEntity.getId(),
+                    new ProjectDTO(
+                            p.getId(),
+                            null,
+                            p.getProjectName(),
+                            p.getCreatedDate(),
+                            p.getModifiedDate(),
+                            this.prepareCorporateEmployeeDTO(p.getCreated_CorporateEmployeeEntity()),
+                            this.prepareCorporateEmployeeDTO(p.getModified_CorporateEmployeeEntity()),
+                            p.getStatusType()
+                    ),
+                    userStoryEntity.getTitle(),
+                    userStoryEntity.getDescription(),
+                    userStoryEntity.getCreatedDate(),
+                    userStoryEntity.getModifiedDate(),
+                    this.prepareCorporateEmployeeDTO(userStoryEntity.getCreatedBy()),
+                    this.prepareCorporateEmployeeDTO(userStoryEntity.getModifiedBy()),
+                    userStoryEntity.getStatusType(),
+                    userStoryLblDTOS,
+                    userStoryEntity.getPriority(),
+                    taskService.getAllTasksOfProject(userStoryEntity.getId())
+            );
+
+        } catch (Exception e) {
+            log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+
+    private CorporateEmployeeDTO prepareCorporateEmployeeDTO(CorporateEmployeeEntity c) {
+//        log.info("Execute method prepareCorporateEmployeeDTO : @Param {} " + c);
+        try {
+                return new CorporateEmployeeDTO(
+                        c.getId(),
+                        new UserDTO(
+                                c.getUserEntity().getId(),
+                                c.getUserEntity().getRefNo(),
+                                c.getUserEntity().getFirstName(),
+                                c.getUserEntity().getLastName(),
+                                c.getUserEntity().getContactNumber(),
+                                c.getUserEntity().getEmail(),
+                                null,
+                                c.getUserEntity().getCreatedDate(),
+                                c.getUserEntity().getStatusType()
+                        ),
+                        null,
+                        c.getCorporateAccessType(),
+                        c.getCreatedDate(),
+                        c.getModifiedDate(),
+                        c.getAcceptedDate(),
+                        c.getStatusType()
+                );
+        } catch (Exception e) {
+            log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private List<UserStoryLblDTO> prepareProjectUserStoryLblByUserStory(ProjectUserStoryEntity projectUserStoryEntity, ProjectEntity projectEntity) {
+        log.info("Execute method prepareProjectUserStoryLblByUserStory : Params{} " + projectUserStoryEntity);
+        try {
+            List<ProjectUserStoryLabelEntity> userStoryLabelsByUserStoryId =
+                    projectUserStoryLabelRepository.getUserStoryLabelsByUserStoryId(projectUserStoryEntity);
+            //create project dto
+            ProjectDTO projectDTO = new ProjectDTO(
+                    projectEntity.getId(),
+                    null,
+                    projectEntity.getProjectName(),
+                    null,
+                    projectEntity.getModifiedDate(),
+                    null,
+                    null,
+                    projectEntity.getStatusType()
+            );
+
+            //prepare project user story lbl return list
+            List<UserStoryLblDTO> lbl_list =  new ArrayList<>();
+            for (ProjectUserStoryLabelEntity lbl : userStoryLabelsByUserStoryId) {
+                lbl_list.add(new UserStoryLblDTO(lbl.getId(), projectDTO, lbl.getUserStoryLabelEntity().getLabel()));
+            }
+            return lbl_list;
+        } catch (Exception e) {
+            log.error("Method prepareProjectUserStoryLbl : " + e.getMessage(), e);
             throw e;
         }
     }

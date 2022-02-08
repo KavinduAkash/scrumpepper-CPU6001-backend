@@ -3,12 +3,15 @@ package com.swlc.ScrumPepperCPU6001.controller.user;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.GetCorporateDetailsResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author hp
@@ -30,6 +33,15 @@ public class ProjectController {
         boolean b = projectService.createNewProject(addProjectRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Project created successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/my-projects", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getMyProjects() {
+        List<GetCorporateDetailsResponseDTO> result = projectService.getAllMyProjects();
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Projects found successfully", result),
                 HttpStatus.OK
         );
     }

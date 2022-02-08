@@ -47,19 +47,43 @@ public class UserStoryLblServiceImpl implements UserStoryLblService {
             //save user story
             userStoryLabelRepository.save(new UserStoryLabelEntity(byId.get(), addUserStoryLblRequestDTO.getLbl()));
 
-            //get all lbls of the project
-            List<UserStoryLabelEntity> byProjectEntity = userStoryLabelRepository.findByProjectEntity(byId.get());
+            return prepareProjectUserStoryLbl(byId.get());
 
+        } catch (Exception e) {
+            log.error("Method createNewUserStoryLbl : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<UserStoryLblDTO> getAllProjectUserStoryLbl(long id) {
+        log.info("Execute method getAllProjectUserStoryLbl : Params{} " + id);
+        try {
+            //check project validity
+            Optional<ProjectEntity> byId = projectRepository.findById(id);
+            if(!byId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+            return prepareProjectUserStoryLbl(byId.get());
+        } catch (Exception e) {
+            log.error("Method getAllProjectUserStoryLbl : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private List<UserStoryLblDTO> prepareProjectUserStoryLbl(ProjectEntity projectEntity) {
+        log.info("Execute method prepareProjectUserStoryLbl : Params{} " + projectEntity);
+        try {
+            List<UserStoryLabelEntity> byProjectEntity = userStoryLabelRepository.findByProjectEntity(projectEntity);
             //create project dto
             ProjectDTO projectDTO = new ProjectDTO(
-                    byId.get().getId(),
+                    projectEntity.getId(),
                     null,
-                    byId.get().getProjectName(),
+                    projectEntity.getProjectName(),
                     null,
-                    byId.get().getModifiedDate(),
+                    projectEntity.getModifiedDate(),
                     null,
                     null,
-                    byId.get().getStatusType()
+                    projectEntity.getStatusType()
             );
 
             //prepare project user story lbl return list
@@ -67,10 +91,9 @@ public class UserStoryLblServiceImpl implements UserStoryLblService {
             for (UserStoryLabelEntity lbl : byProjectEntity) {
                 lbl_list.add(new UserStoryLblDTO(lbl.getId(), projectDTO, lbl.getLabel()));
             }
-
             return lbl_list;
         } catch (Exception e) {
-            log.error("Method createNewUserStoryLbl : " + e.getMessage(), e);
+            log.error("Method prepareProjectUserStoryLbl : " + e.getMessage(), e);
             throw e;
         }
     }

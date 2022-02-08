@@ -11,4 +11,5 @@ import java.util.List;
  */
 public interface UserStoryLblService {
     List<UserStoryLblDTO> createNewUserStoryLbl(AddUserStoryLblRequestDTO addUserStoryLblRequestDTO);
+    List<UserStoryLblDTO> getAllProjectUserStoryLbl(long id);
 }

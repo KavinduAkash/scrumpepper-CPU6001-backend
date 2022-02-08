@@ -1,7 +1,6 @@
 package com.swlc.ScrumPepperCPU6001.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.swlc.ScrumPepperCPU6001.enums.Priority;
 import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,20 +18,16 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "project_user_story")
-public class ProjectUserStoryEntity {
+@Table(name = "project_task")
+public class ProjectTaskEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="project_id")
-    private ProjectEntity projectEntity;
-    @Column(nullable = false)
+    @JoinColumn(name="project_user_story_id")
+    private ProjectUserStoryEntity projectUserStoryEntity;
+    @Column
     private String title;
-    @Column(length = 10000)
-    private String description;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createdDate;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date modifiedDate;
     @ManyToOne(cascade = CascadeType.ALL)
@@ -43,36 +38,28 @@ public class ProjectUserStoryEntity {
     private CorporateEmployeeEntity modifiedBy;
     @Enumerated(EnumType.STRING)
     private UserStoryStatusType statusType;
-    @Enumerated(EnumType.STRING)
-    private Priority priority;
 
-    public ProjectUserStoryEntity(ProjectEntity projectEntity, String title, String description, Date createdDate,
-                                  Date modifiedDate, CorporateEmployeeEntity createdBy, CorporateEmployeeEntity modifiedBy,
-                                  UserStoryStatusType statusType, Priority priority) {
-        this.projectEntity = projectEntity;
+    public ProjectTaskEntity(ProjectUserStoryEntity projectUserStoryEntity, String title, Date modifiedDate,
+                             CorporateEmployeeEntity createdBy, CorporateEmployeeEntity modifiedBy,
+                             UserStoryStatusType statusType) {
+        this.projectUserStoryEntity = projectUserStoryEntity;
         this.title = title;
-        this.description = description;
-        this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
         this.createdBy = createdBy;
         this.modifiedBy = modifiedBy;
         this.statusType = statusType;
-        this.priority = priority;
     }
 
     @Override
     public String toString() {
-        return "ProjectUserStoryEntity{" +
+        return "ProjectTaskEntity{" +
                 "id=" + id +
-                ", projectEntity=" + projectEntity +
+                ", projectUserStoryEntity=" + projectUserStoryEntity +
                 ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", createdDate=" + createdDate +
                 ", modifiedDate=" + modifiedDate +
                 ", createdBy=" + createdBy +
                 ", modifiedBy=" + modifiedBy +
                 ", statusType=" + statusType +
-                ", priority=" + priority +
                 '}';
     }
 }
