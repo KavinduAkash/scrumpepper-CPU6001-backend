@@ -31,6 +31,10 @@ public class ProjectSprintEntity {
     @Column
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date startDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date endDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date modifiedDate;
@@ -43,12 +47,12 @@ public class ProjectSprintEntity {
     @Enumerated(EnumType.STRING)
     private SprintStatusType statusType;
 
-    public ProjectSprintEntity(ProjectEntity projectEntity, String sprintName, String description, Date createdDate,
-                               Date modifiedDate, CorporateEmployeeEntity assignedBy, CorporateEmployeeEntity modifiedBy,
-                               SprintStatusType statusType) {
+    public ProjectSprintEntity(ProjectEntity projectEntity, String sprintName, String description, Date startDate, Date endDate, Date createdDate, Date modifiedDate, CorporateEmployeeEntity assignedBy, CorporateEmployeeEntity modifiedBy, SprintStatusType statusType) {
         this.projectEntity = projectEntity;
         this.sprintName = sprintName;
         this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
         this.assignedBy = assignedBy;

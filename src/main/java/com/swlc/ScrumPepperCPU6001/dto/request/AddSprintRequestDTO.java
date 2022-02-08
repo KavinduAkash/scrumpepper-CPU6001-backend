@@ -15,6 +15,8 @@ import lombok.Setter;
 public class AddSprintRequestDTO {
     private long projectId;
     private String sprintName;
+    private String startDate;
+    private String endDate;
     private String description;
 
     @Override
@@ -22,6 +24,8 @@ public class AddSprintRequestDTO {
         return "AddSprintRequestDTO{" +
                 "projectId=" + projectId +
                 ", sprintName='" + sprintName + '\'' +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }

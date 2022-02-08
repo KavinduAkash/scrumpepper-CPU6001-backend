@@ -21,6 +21,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
@@ -101,11 +103,16 @@ public class SprintServiceImpl implements SprintService {
             if(byProjectEntityAndSprintName.isPresent())
                 throw new ProjectException(ApplicationConstant.RESOURCE_ALREADY_EXIST,
                         "A sprint already exist with given sprint name");
+            SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date startDate = formatter.parse(addSprintRequestDTO.getStartDate() + " 00:00:00");
+            Date endDate = formatter.parse(addSprintRequestDTO.getEndDate() + " 23:59:59");
             ProjectSprintEntity save = sprintRepository.save(
                     new ProjectSprintEntity(
                             projectById.get(),
                             addSprintRequestDTO.getSprintName(),
                             addSprintRequestDTO.getDescription(),
+                            startDate,
+                            endDate,
                             new Date(),
                             new Date(),
                             auth_user_admin.get(),
@@ -190,9 +197,12 @@ public class SprintServiceImpl implements SprintService {
                     modifiedCorporateEmployeeDTO,
                     save.getStatusType()
             );
+        } catch (ParseException ex) {
+            log.error("Method createSprint : " + ex.getMessage(), ex);
+            throw new ProjectException(ApplicationConstant.COMMON_ERROR_CODE, "Something went wrong");
         } catch (Exception e) {
             log.error("Method createSprint : " + e.getMessage(), e);
-            throw e;
+           throw e;
         }
     }
 
