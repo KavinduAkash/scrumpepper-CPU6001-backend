@@ -38,10 +38,12 @@ public class UserStoryServiceImpl implements UserStoryService {
     private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
     private final CorporateRepository corporateRepository;
     private final TaskService taskService;
+    private final SprintRepository sprintRepository;
+    private final ProjectSprintUserStoryRepository projectSprintUserStoryRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
-    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository, TaskService taskService) {
+    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository, TaskService taskService, SprintRepository sprintRepository, ProjectSprintUserStoryRepository projectSprintUserStoryRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
@@ -50,6 +52,8 @@ public class UserStoryServiceImpl implements UserStoryService {
         this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
         this.corporateRepository = corporateRepository;
         this.taskService = taskService;
+        this.sprintRepository = sprintRepository;
+        this.projectSprintUserStoryRepository = projectSprintUserStoryRepository;
     }
 
     @Override
@@ -330,6 +334,23 @@ public class UserStoryServiceImpl implements UserStoryService {
         try {
             ProjectEntity p = userStoryEntity.getProjectEntity();
             List<UserStoryLblDTO> userStoryLblDTOS = prepareProjectUserStoryLblByUserStory(userStoryEntity, p);
+            List<ProjectSprintUserStoryEntity> sprintUserStoryEntities = projectSprintUserStoryRepository.getByLatestSprintUserStoryRecord(userStoryEntity.getId());
+            List<ProjectSprintEntity> otherSprints = new ArrayList<>();
+            if(!sprintUserStoryEntities.isEmpty()) {
+                ProjectSprintUserStoryEntity projectSprintUserStoryEntity = sprintUserStoryEntities.get(0);
+                otherSprints = sprintRepository.getOtherSprints(projectSprintUserStoryEntity.getProjectSprintEntity());
+            } else {
+                otherSprints = sprintRepository.findByProjectEntity(userStoryEntity.getProjectEntity());
+            }
+
+            List<SprintDTO> sprintDTOList = new ArrayList<>();
+            for (ProjectSprintEntity projectSprintEntity : otherSprints) {
+                SprintDTO sprintDTO = new SprintDTO();
+                sprintDTO.setId(projectSprintEntity.getId());
+                sprintDTO.setSprintName(projectSprintEntity.getSprintName());
+                sprintDTOList.add(sprintDTO);
+            }
+
             return new UserStoryDTO(
                     userStoryEntity.getId(),
                     new ProjectDTO(
@@ -351,7 +372,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                     userStoryEntity.getStatusType(),
                     userStoryLblDTOS,
                     userStoryEntity.getPriority(),
-                    taskService.getAllTasksOfProject(userStoryEntity.getId())
+                    taskService.getAllTasksOfProject(userStoryEntity.getId()),
+                    sprintDTOList
             );
 
         } catch (Exception e) {

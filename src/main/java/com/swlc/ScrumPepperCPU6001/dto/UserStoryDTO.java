@@ -30,6 +30,7 @@ public class UserStoryDTO {
     private List<UserStoryLblDTO> userStoryLbl;
     private Priority priority;
     private List<TaskDTO> tasks;
+    private List<SprintDTO> otherSprints;
 
     @Override
     public String toString() {
