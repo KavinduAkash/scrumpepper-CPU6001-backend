@@ -4,9 +4,11 @@ import com.swlc.ScrumPepperCPU6001.dto.UserStoryDTO;
 import com.swlc.ScrumPepperCPU6001.dto.UserStoryLblDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserStoryLblRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.MoveUserStoryRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserStoryStatusRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
+import com.swlc.ScrumPepperCPU6001.service.SprintService;
 import com.swlc.ScrumPepperCPU6001.service.UserStoryLblService;
 import com.swlc.ScrumPepperCPU6001.service.UserStoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +29,13 @@ public class UserStoryController {
 
     private final UserStoryService userStoryService;
     private final UserStoryLblService userStoryLblService;
+    private final SprintService sprintService;
 
     @Autowired
-    public UserStoryController(UserStoryService userStoryService, UserStoryLblService userStoryLblService) {
+    public UserStoryController(UserStoryService userStoryService, UserStoryLblService userStoryLblService, SprintService sprintService) {
         this.userStoryService = userStoryService;
         this.userStoryLblService = userStoryLblService;
+        this.sprintService = sprintService;
     }
 
 
@@ -80,6 +84,15 @@ public class UserStoryController {
         List<UserStoryDTO> result = userStoryService.getProjectBacklog(id, corporate);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "User stories found successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping(value = "/move" , produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity moveUserStory(@RequestBody MoveUserStoryRequestDTO moveUserStoryRequestDTO) {
+        boolean result = sprintService.userStoryMove(moveUserStoryRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "User stories moved successfully", result),
                 HttpStatus.OK
         );
     }

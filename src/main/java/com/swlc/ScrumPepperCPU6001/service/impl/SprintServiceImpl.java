@@ -3,13 +3,11 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.*;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddSprintRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.MoveUserStoryRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateSprintRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.SprintResponseDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
-import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
-import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
-import com.swlc.ScrumPepperCPU6001.enums.ScrumRoles;
-import com.swlc.ScrumPepperCPU6001.enums.SprintStatusType;
+import com.swlc.ScrumPepperCPU6001.enums.*;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
 import com.swlc.ScrumPepperCPU6001.repository.*;
@@ -41,6 +39,7 @@ public class SprintServiceImpl implements SprintService {
     private final ProjectMemberRepository projectMemberRepository;
     private final UserStoryLabelRepository userStoryLabelRepository;
     private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
+    private final ProjectSprintUserStoryRepository projectSprintUserStoryRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
@@ -48,7 +47,7 @@ public class SprintServiceImpl implements SprintService {
     public SprintServiceImpl(ProjectRepository projectRepository, SprintRepository sprintRepository,
                              UserStoryRepository userStoryRepository, CorporateEmployeeRepository corporateEmployeeRepository,
                              ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository,
-                             ProjectUserStoryLabelRepository projectUserStoryLabelRepository) {
+                             ProjectUserStoryLabelRepository projectUserStoryLabelRepository, ProjectSprintUserStoryRepository projectSprintUserStoryRepository) {
         this.projectRepository = projectRepository;
         this.sprintRepository = sprintRepository;
         this.userStoryRepository = userStoryRepository;
@@ -56,6 +55,7 @@ public class SprintServiceImpl implements SprintService {
         this.projectMemberRepository = projectMemberRepository;
         this.userStoryLabelRepository = userStoryLabelRepository;
         this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
+        this.projectSprintUserStoryRepository = projectSprintUserStoryRepository;
     }
 
     @Override
@@ -375,6 +375,85 @@ public class SprintServiceImpl implements SprintService {
             log.error("Method getProjectSprints : " + e.getMessage(), e);
             throw e;
         }
+    }
+
+    @Override
+    public boolean userStoryMove(MoveUserStoryRequestDTO moveUserStoryRequestDTO) {
+        log.info("Execute method userStoryMove : Param{} " + moveUserStoryRequestDTO.toString());
+        try {
+
+            Optional<ProjectUserStoryEntity> userStoryById =
+                    userStoryRepository.findById(moveUserStoryRequestDTO.getUserStoryId());
+            if(!userStoryById.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
+
+            ProjectEntity projectEntity = userStoryById.get().getProjectEntity();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                        projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                projectEntity,
+                                auth_user_admin.get()
+                        );
+                if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+            }
+
+            Optional<ProjectSprintEntity> sprintById = sprintRepository.findById(moveUserStoryRequestDTO.getSprintId());
+            if(!sprintById.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "sprint not found");
+
+            List<ProjectSprintUserStoryEntity> byLatestSprintUserStoryRecord =
+                    projectSprintUserStoryRepository.getByLatestSprintUserStoryRecord(moveUserStoryRequestDTO.getUserStoryId());
+
+            if(!byLatestSprintUserStoryRecord.isEmpty()) {
+                ProjectSprintUserStoryEntity projectSprintUserStoryEntity_old = byLatestSprintUserStoryRecord.get(0);
+                projectSprintUserStoryEntity_old.setStatus(SprintUserStoryStatus.INACTIVE);
+                projectSprintUserStoryEntity_old.setRemovedDate(new Date());
+                projectSprintUserStoryRepository.save(projectSprintUserStoryEntity_old);
+                ProjectSprintUserStoryEntity projectSprintUserStoryEntity_new =
+                        new ProjectSprintUserStoryEntity(
+                                projectSprintUserStoryEntity_old.getProjectUserStoryEntity(),
+                                new Date(),
+                                projectSprintUserStoryEntity_old.getProjectSprintEntity(),
+                                SprintUserStoryStatus.ACTIVE,
+                                null
+                        );
+                projectSprintUserStoryRepository.save(projectSprintUserStoryEntity_new);
+                return true;
+            } else {
+                ProjectSprintUserStoryEntity projectSprintUserStoryEntity_new =
+                        new ProjectSprintUserStoryEntity(
+                                userStoryById.get(),
+                                new Date(),
+                                sprintById.get(),
+                                SprintUserStoryStatus.ACTIVE,
+                                null
+                        );
+                projectSprintUserStoryRepository.save(projectSprintUserStoryEntity_new);
+                return true;
+            }
+        } catch (Exception e) {
+            log.error("Method userStoryMove : " + e.getMessage(), e);
+            throw e;
+        }
+
     }
 
     private List<SprintResponseDTO> prepareSprintResponseDTO(List<ProjectSprintEntity> sprintEntities) {
