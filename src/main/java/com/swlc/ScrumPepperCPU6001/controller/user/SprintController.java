@@ -4,11 +4,14 @@ import com.swlc.ScrumPepperCPU6001.dto.SprintDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddSprintRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateSprintRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.SprintResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.SprintService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author hp
@@ -38,6 +41,15 @@ public class SprintController {
         SprintDTO sprint = sprintService.updateSprint(updateSprintRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Sprint updated successfully", sprint),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getProjectSprints(@RequestParam("project") long id) {
+        List<SprintResponseDTO> result = sprintService.getProjectSprints(id);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Sprints found successfully", result),
                 HttpStatus.OK
         );
     }

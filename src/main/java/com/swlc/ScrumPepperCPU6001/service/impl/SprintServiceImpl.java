@@ -1,12 +1,10 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
-import com.swlc.ScrumPepperCPU6001.dto.CorporateDTO;
-import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
-import com.swlc.ScrumPepperCPU6001.dto.SprintDTO;
-import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
+import com.swlc.ScrumPepperCPU6001.dto.*;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddSprintRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateSprintRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.SprintResponseDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
@@ -21,9 +19,12 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -261,9 +262,15 @@ public class SprintServiceImpl implements SprintService {
                 }
             }
 
+            SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date startDate = formatter.parse(updateSprintRequestDTO.getStartDate() + " 00:00:00");
+            Date endDate = formatter.parse(updateSprintRequestDTO.getEndDate() + " 23:59:59");
+
             ProjectSprintEntity projectSprintEntity = byId.get();
             projectSprintEntity.setSprintName(updateSprintRequestDTO.getSprintName());
             projectSprintEntity.setDescription(updateSprintRequestDTO.getDescription());
+            projectSprintEntity.setStartDate(startDate);
+            projectSprintEntity.setEndDate(endDate);
             projectSprintEntity.setModifiedDate(new Date());
             projectSprintEntity.setModifiedBy(auth_user_admin.get());
             ProjectSprintEntity save = sprintRepository.save(projectSprintEntity);
@@ -345,8 +352,102 @@ public class SprintServiceImpl implements SprintService {
                     modifiedCorporateEmployeeDTO,
                     save.getStatusType()
             );
+        } catch (ParseException ex) {
+            log.error("Method updateSprint : " + ex.getMessage(), ex);
+            throw new ProjectException(ApplicationConstant.COMMON_ERROR_CODE, "Something went wrong");
         } catch (Exception e) {
             log.error("Method updateSprint : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<SprintResponseDTO> getProjectSprints(long projectId) {
+        log.info("Execute method getProjectSprints : projectId : " + projectId);
+        try {
+            Optional<ProjectEntity> projectOptional = projectRepository.findById(projectId);
+            if(!projectOptional.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+            ProjectEntity projectEntity = projectOptional.get();
+            List<ProjectSprintEntity> sprintEntities = sprintRepository.findByProjectEntity(projectEntity);
+            return this.prepareSprintResponseDTO(sprintEntities);
+        } catch (Exception e) {
+            log.error("Method getProjectSprints : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private List<SprintResponseDTO> prepareSprintResponseDTO(List<ProjectSprintEntity> sprintEntities) {
+        try {
+            List<SprintResponseDTO> sprintResponseDTOS = new ArrayList<>();
+            for (ProjectSprintEntity sprint : sprintEntities) {
+                sprintResponseDTOS.add(prepareSprintResponseDTO(sprint));
+            }
+            return sprintResponseDTOS;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    private SprintResponseDTO prepareSprintResponseDTO(ProjectSprintEntity sprintEntity) {
+        try {
+            List<UserStoryDTO> userStoryDTOS = new ArrayList<>();
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String startDate = dateFormat.format(sprintEntity.getStartDate());
+            String endDate = dateFormat.format(sprintEntity.getEndDate());
+            return new SprintResponseDTO(
+                    sprintEntity.getId(),
+                    sprintEntity.getProjectEntity().getId(),
+                    sprintEntity.getSprintName(),
+                    sprintEntity.getDescription(),
+                    startDate,
+                    endDate,
+                    sprintEntity.getCreatedDate(),
+                    sprintEntity.getModifiedDate(),
+                    this.prepareCorporateEmployeeDTO(sprintEntity.getAssignedBy()),
+                    this.prepareCorporateEmployeeDTO(sprintEntity.getModifiedBy()),
+                    sprintEntity.getStatusType(),
+                    userStoryDTOS
+            );
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    private CorporateEmployeeDTO prepareCorporateEmployeeDTO(CorporateEmployeeEntity corporateEmployeeEntity) {
+        try {
+            CorporateEntity corporateEntity = corporateEmployeeEntity.getCorporateEntity();
+            UserEntity userEntity = corporateEmployeeEntity.getUserEntity();
+            return new CorporateEmployeeDTO(
+                    corporateEmployeeEntity.getId(),
+                    new UserDTO(
+                            userEntity.getId(),
+                            userEntity.getRefNo(),
+                            userEntity.getFirstName(),
+                            userEntity.getLastName(),
+                            userEntity.getContactNumber(),
+                            userEntity.getEmail(),
+                            null,
+                            userEntity.getCreatedDate(),
+                            userEntity.getStatusType()
+                    ),
+                    new CorporateDTO(
+                            corporateEntity.getId(),
+                            corporateEntity.getName(),
+                            corporateEntity.getAddress(),
+                            corporateEntity.getContactNumber1(),
+                            corporateEntity.getContactNumber2(),
+                            corporateEntity.getEmail(),
+                            corporateEntity.getCorporateLogo(),
+                            corporateEntity.getStatusType()
+                    ),
+                    corporateEmployeeEntity.getCorporateAccessType(),
+                    corporateEmployeeEntity.getCreatedDate(),
+                    corporateEmployeeEntity.getModifiedDate(),
+                    corporateEmployeeEntity.getAcceptedDate(),
+                    corporateEmployeeEntity.getStatusType()
+            );
+        } catch (Exception e) {
             throw e;
         }
     }

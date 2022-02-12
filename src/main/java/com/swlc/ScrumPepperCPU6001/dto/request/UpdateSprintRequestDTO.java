@@ -16,6 +16,8 @@ public class UpdateSprintRequestDTO {
     private long id;
     private long projectId;
     private String sprintName;
+    private String startDate;
+    private String endDate;
     private String description;
 
     @Override
@@ -24,6 +26,8 @@ public class UpdateSprintRequestDTO {
                 "id=" + id +
                 ", projectId=" + projectId +
                 ", sprintName='" + sprintName + '\'' +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }
