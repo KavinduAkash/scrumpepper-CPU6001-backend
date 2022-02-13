@@ -40,6 +40,7 @@ public class SprintServiceImpl implements SprintService {
     private final UserStoryLabelRepository userStoryLabelRepository;
     private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
     private final ProjectSprintUserStoryRepository projectSprintUserStoryRepository;
+    private final UserStoryServiceImpl userStoryServiceImpl;
     @Autowired
     private TokenValidator tokenValidator;
 
@@ -47,7 +48,7 @@ public class SprintServiceImpl implements SprintService {
     public SprintServiceImpl(ProjectRepository projectRepository, SprintRepository sprintRepository,
                              UserStoryRepository userStoryRepository, CorporateEmployeeRepository corporateEmployeeRepository,
                              ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository,
-                             ProjectUserStoryLabelRepository projectUserStoryLabelRepository, ProjectSprintUserStoryRepository projectSprintUserStoryRepository) {
+                             ProjectUserStoryLabelRepository projectUserStoryLabelRepository, ProjectSprintUserStoryRepository projectSprintUserStoryRepository, UserStoryServiceImpl userStoryServiceImpl) {
         this.projectRepository = projectRepository;
         this.sprintRepository = sprintRepository;
         this.userStoryRepository = userStoryRepository;
@@ -56,6 +57,7 @@ public class SprintServiceImpl implements SprintService {
         this.userStoryLabelRepository = userStoryLabelRepository;
         this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
         this.projectSprintUserStoryRepository = projectSprintUserStoryRepository;
+        this.userStoryServiceImpl = userStoryServiceImpl;
     }
 
     @Override
@@ -431,7 +433,7 @@ public class SprintServiceImpl implements SprintService {
                         new ProjectSprintUserStoryEntity(
                                 projectSprintUserStoryEntity_old.getProjectUserStoryEntity(),
                                 new Date(),
-                                projectSprintUserStoryEntity_old.getProjectSprintEntity(),
+                                sprintById.get(),
                                 SprintUserStoryStatus.ACTIVE,
                                 null
                         );
@@ -471,6 +473,10 @@ public class SprintServiceImpl implements SprintService {
     private SprintResponseDTO prepareSprintResponseDTO(ProjectSprintEntity sprintEntity) {
         try {
             List<UserStoryDTO> userStoryDTOS = new ArrayList<>();
+            List<ProjectSprintUserStoryEntity> sprintUserStoryEntities = projectSprintUserStoryRepository.getByUserStoriesBySprint(sprintEntity.getId());
+            for (ProjectSprintUserStoryEntity projectSprintUserStoryEntity : sprintUserStoryEntities) {
+                userStoryDTOS.add(userStoryServiceImpl.prepareUserStoryDTO(projectSprintUserStoryEntity.getProjectUserStoryEntity()));
+            }
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String startDate = dateFormat.format(sprintEntity.getStartDate());
             String endDate = dateFormat.format(sprintEntity.getEndDate());
@@ -530,4 +536,5 @@ public class SprintServiceImpl implements SprintService {
             throw e;
         }
     }
+
 }

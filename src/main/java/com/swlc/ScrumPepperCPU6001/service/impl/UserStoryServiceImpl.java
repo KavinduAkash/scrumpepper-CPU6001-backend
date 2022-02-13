@@ -329,15 +329,20 @@ public class UserStoryServiceImpl implements UserStoryService {
         }
     }
 
-    private UserStoryDTO prepareUserStoryDTO(ProjectUserStoryEntity userStoryEntity) {
+    public UserStoryDTO prepareUserStoryDTO(ProjectUserStoryEntity userStoryEntity) {
         log.info("Execute method prepareUserStoryDTO : @Param {} " + (userStoryEntity.getId()==199?userStoryEntity.getDescription():""));
         try {
             ProjectEntity p = userStoryEntity.getProjectEntity();
             List<UserStoryLblDTO> userStoryLblDTOS = prepareProjectUserStoryLblByUserStory(userStoryEntity, p);
             List<ProjectSprintUserStoryEntity> sprintUserStoryEntities = projectSprintUserStoryRepository.getByLatestSprintUserStoryRecord(userStoryEntity.getId());
             List<ProjectSprintEntity> otherSprints = new ArrayList<>();
+            SprintDTO currentSprint = null;
             if(!sprintUserStoryEntities.isEmpty()) {
                 ProjectSprintUserStoryEntity projectSprintUserStoryEntity = sprintUserStoryEntities.get(0);
+                SprintDTO sprintDTO = new SprintDTO();
+                sprintDTO.setId(projectSprintUserStoryEntity.getProjectSprintEntity().getId());
+                sprintDTO.setSprintName(projectSprintUserStoryEntity.getProjectSprintEntity().getSprintName());
+                currentSprint = sprintDTO;
                 otherSprints = sprintRepository.getOtherSprints(projectSprintUserStoryEntity.getProjectSprintEntity());
             } else {
                 otherSprints = sprintRepository.findByProjectEntity(userStoryEntity.getProjectEntity());
@@ -373,7 +378,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                     userStoryLblDTOS,
                     userStoryEntity.getPriority(),
                     taskService.getAllTasksOfProject(userStoryEntity.getId()),
-                    sprintDTOList
+                    sprintDTOList,
+                    currentSprint
             );
 
         } catch (Exception e) {

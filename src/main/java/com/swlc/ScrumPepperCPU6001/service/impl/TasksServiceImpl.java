@@ -35,13 +35,22 @@ public class TasksServiceImpl implements TaskService {
     private final UserStoryLabelRepository userStoryLabelRepository;
     private final ProjectUserStoryLabelRepository projectUserStoryLabelRepository;
     private final CorporateRepository corporateRepository;
+    private final SprintRepository sprintRepository;
+    private final ProjectSprintUserStoryRepository projectSprintUserStoryRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
     public TasksServiceImpl(UserStoryRepository userStoryRepository,
                             ProjectRepository projectRepository,
                             CorporateEmployeeRepository corporateEmployeeRepository,
-                            ProjectMemberRepository projectMemberRepository, ProjectTaskRepository projectTaskRepository, ProjectTaskAssignsRepository projectTaskAssignsRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository) {
+                            ProjectMemberRepository projectMemberRepository,
+                            ProjectTaskRepository projectTaskRepository,
+                            ProjectTaskAssignsRepository projectTaskAssignsRepository,
+                            UserStoryLabelRepository userStoryLabelRepository,
+                            ProjectUserStoryLabelRepository projectUserStoryLabelRepository,
+                            CorporateRepository corporateRepository,
+                            SprintRepository sprintRepository,
+                            ProjectSprintUserStoryRepository projectSprintUserStoryRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
@@ -51,6 +60,8 @@ public class TasksServiceImpl implements TaskService {
         this.userStoryLabelRepository = userStoryLabelRepository;
         this.projectUserStoryLabelRepository = projectUserStoryLabelRepository;
         this.corporateRepository = corporateRepository;
+        this.sprintRepository = sprintRepository;
+        this.projectSprintUserStoryRepository = projectSprintUserStoryRepository;
     }
 
     @Override
@@ -338,6 +349,28 @@ public class TasksServiceImpl implements TaskService {
         try {
             ProjectEntity p = userStoryEntity.getProjectEntity();
             List<UserStoryLblDTO> userStoryLblDTOS = prepareProjectUserStoryLblByUserStory(userStoryEntity, p);
+            List<ProjectSprintUserStoryEntity> sprintUserStoryEntities = projectSprintUserStoryRepository.getByLatestSprintUserStoryRecord(userStoryEntity.getId());
+            List<ProjectSprintEntity> otherSprints = new ArrayList<>();
+            SprintDTO currentSprint = null;
+            if(!sprintUserStoryEntities.isEmpty()) {
+                ProjectSprintUserStoryEntity projectSprintUserStoryEntity = sprintUserStoryEntities.get(0);
+                SprintDTO sprintDTO = new SprintDTO();
+                sprintDTO.setId(projectSprintUserStoryEntity.getProjectSprintEntity().getId());
+                sprintDTO.setSprintName(projectSprintUserStoryEntity.getProjectSprintEntity().getSprintName());
+                currentSprint = sprintDTO;
+                otherSprints = sprintRepository.getOtherSprints(projectSprintUserStoryEntity.getProjectSprintEntity());
+            } else {
+                otherSprints = sprintRepository.findByProjectEntity(userStoryEntity.getProjectEntity());
+            }
+
+            List<SprintDTO> sprintDTOList = new ArrayList<>();
+            for (ProjectSprintEntity projectSprintEntity : otherSprints) {
+                SprintDTO sprintDTO = new SprintDTO();
+                sprintDTO.setId(projectSprintEntity.getId());
+                sprintDTO.setSprintName(projectSprintEntity.getSprintName());
+                sprintDTOList.add(sprintDTO);
+            }
+
             return new UserStoryDTO(
                     userStoryEntity.getId(),
                     new ProjectDTO(
@@ -359,9 +392,10 @@ public class TasksServiceImpl implements TaskService {
                     userStoryEntity.getStatusType(),
                     userStoryLblDTOS,
                     userStoryEntity.getPriority(),
-                    null
+                    null,
+                    sprintDTOList,
+                    currentSprint
             );
-
         } catch (Exception e) {
             log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
             throw e;
