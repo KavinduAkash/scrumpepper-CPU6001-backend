@@ -83,7 +83,8 @@ public class UserStoryLblServiceImpl implements UserStoryLblService {
                     projectEntity.getModifiedDate(),
                     null,
                     null,
-                    projectEntity.getStatusType()
+                    projectEntity.getStatusType(),
+                    projectEntity.getRef()
             );
 
             //prepare project user story lbl return list

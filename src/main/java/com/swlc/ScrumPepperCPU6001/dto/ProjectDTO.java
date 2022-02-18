@@ -24,6 +24,7 @@ public class ProjectDTO {
     private CorporateEmployeeDTO createdBy;
     private CorporateEmployeeDTO modifiedBy;
     private ProjectStatusType statusType;
+    private String uuid;
 
     @Override
     public String toString() {
@@ -36,6 +37,7 @@ public class ProjectDTO {
                 ", createdBy=" + createdBy +
                 ", modifiedBy=" + modifiedBy +
                 ", statusType=" + statusType +
+                ", uuid='" + uuid + '\'' +
                 '}';
     }
 }

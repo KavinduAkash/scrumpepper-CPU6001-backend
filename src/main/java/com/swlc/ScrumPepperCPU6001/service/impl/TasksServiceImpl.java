@@ -381,7 +381,8 @@ public class TasksServiceImpl implements TaskService {
                             p.getModifiedDate(),
                             this.prepareCorporateEmployeeDTO(p.getCreated_CorporateEmployeeEntity()),
                             this.prepareCorporateEmployeeDTO(p.getModified_CorporateEmployeeEntity()),
-                            p.getStatusType()
+                            p.getStatusType(),
+                            p.getRef()
                     ),
                     userStoryEntity.getTitle(),
                     userStoryEntity.getDescription(),
@@ -416,7 +417,8 @@ public class TasksServiceImpl implements TaskService {
                     projectEntity.getModifiedDate(),
                     null,
                     null,
-                    projectEntity.getStatusType()
+                    projectEntity.getStatusType(),
+                    projectEntity.getRef()
             );
 
             //prepare project user story lbl return list

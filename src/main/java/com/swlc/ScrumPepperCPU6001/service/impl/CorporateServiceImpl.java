@@ -294,7 +294,7 @@ public class CorporateServiceImpl implements CorporateService {
                         modifyBy.getAcceptedDate(),
                         modifyBy.getStatusType()
                 );
-                ProjectDTO projectDTO = new ProjectDTO(p.getId(), null, p.getProjectName(), p.getCreatedDate(), p.getModifiedDate(), createdEmployee, modifiedEmployee, p.getStatusType());
+                ProjectDTO projectDTO = new ProjectDTO(p.getId(), null, p.getProjectName(), p.getCreatedDate(), p.getModifiedDate(), createdEmployee, modifiedEmployee, p.getStatusType(), p.getRef());
                 List<ProjectMemberResponseDTO> projectMemberResponseDTOS =  new ArrayList<>();
                 List<ProjectMemberEntity> projectMemberEntities = projectMemberRepository.findByProjectEntity(p);
                 for (ProjectMemberEntity pm : projectMemberEntities) {

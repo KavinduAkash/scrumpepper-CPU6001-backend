@@ -10,7 +10,7 @@ import java.util.List;
  * @author hp
  */
 public interface UserStoryService {
-    UserStoryDTO handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO);
+    UserStoryDTO handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO, long sprint_id);
     boolean updateUserStoryStatus(UpdateUserStoryStatusRequestDTO updateUserStoryStatusRequestDTO);
-    List<UserStoryDTO> getProjectBacklog(long id, long corporateId);
+    List<UserStoryDTO> getProjectBacklog(String ref, long corporateId);
 }

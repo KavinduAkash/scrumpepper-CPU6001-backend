@@ -40,14 +40,10 @@ public class ProjectEntity {
     private CorporateEmployeeEntity modified_CorporateEmployeeEntity;
     @Enumerated(EnumType.STRING)
     private ProjectStatusType statusType;
+    @Column(unique = true)
+    private String ref;
 
-    public ProjectEntity(CorporateEntity corporateEntity,
-                         String projectName,
-                         Date createdDate,
-                         Date modifiedDate,
-                         CorporateEmployeeEntity created_CorporateEmployeeEntity,
-                         CorporateEmployeeEntity modified_CorporateEmployeeEntity,
-                         ProjectStatusType statusType) {
+    public ProjectEntity(CorporateEntity corporateEntity, String projectName, Date createdDate, Date modifiedDate, CorporateEmployeeEntity created_CorporateEmployeeEntity, CorporateEmployeeEntity modified_CorporateEmployeeEntity, ProjectStatusType statusType, String ref) {
         this.corporateEntity = corporateEntity;
         this.projectName = projectName;
         this.createdDate = createdDate;
@@ -55,6 +51,7 @@ public class ProjectEntity {
         this.created_CorporateEmployeeEntity = created_CorporateEmployeeEntity;
         this.modified_CorporateEmployeeEntity = modified_CorporateEmployeeEntity;
         this.statusType = statusType;
+        this.ref = ref;
     }
 
     @Override
@@ -68,6 +65,7 @@ public class ProjectEntity {
                 ", created_CorporateEmployeeEntity=" + created_CorporateEmployeeEntity +
                 ", modified_CorporateEmployeeEntity=" + modified_CorporateEmployeeEntity +
                 ", statusType=" + statusType +
+                ", ref='" + ref + '\'' +
                 '}';
     }
 }

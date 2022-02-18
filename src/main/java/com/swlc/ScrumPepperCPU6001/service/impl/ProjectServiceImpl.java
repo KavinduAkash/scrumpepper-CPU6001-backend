@@ -25,10 +25,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author hp
@@ -89,7 +86,8 @@ public class ProjectServiceImpl implements ProjectService {
                             new Date(),
                             auth_user_admin.get(),
                             auth_user_admin.get(),
-                            ProjectStatusType.ACTIVE
+                            ProjectStatusType.ACTIVE,
+                            UUID.randomUUID().toString()
                     )
             );
             List<AddProjectMemberDTO> projectMembers = addProjectRequestDTO.getProjectMembers();
@@ -150,7 +148,9 @@ public class ProjectServiceImpl implements ProjectService {
                             p.getModifiedDate(),
                             null,
                             null,
-                            p.getStatusType());
+                            p.getStatusType(),
+                            p.getRef()
+                            );
                     projectList.add(new YourProjectResponseDTO(projectDTO, null, pm.getScrumRole()));
                 }
                 corporateProjectList.add(

@@ -5,10 +5,7 @@ import com.swlc.ScrumPepperCPU6001.dto.*;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserStoryStatusRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
-import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
-import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
-import com.swlc.ScrumPepperCPU6001.enums.ScrumRoles;
-import com.swlc.ScrumPepperCPU6001.enums.UserStoryStatusType;
+import com.swlc.ScrumPepperCPU6001.enums.*;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
 import com.swlc.ScrumPepperCPU6001.repository.*;
@@ -18,6 +15,8 @@ import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +28,7 @@ import java.util.Optional;
  */
 @Service
 @Log4j2
+@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 public class UserStoryServiceImpl implements UserStoryService {
     private final UserStoryRepository userStoryRepository;
     private final ProjectRepository projectRepository;
@@ -57,7 +57,8 @@ public class UserStoryServiceImpl implements UserStoryService {
     }
 
     @Override
-    public UserStoryDTO handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO) {
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public UserStoryDTO handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO, long sprint_id) {
         log.info("Execute method createNewUserStory : addUserStoryRequestDTO : " + addUserStoryRequestDTO.toString());
         try {
             Optional<ProjectEntity> projectById = projectRepository.findById(addUserStoryRequestDTO.getProjectId());
@@ -195,8 +196,24 @@ public class UserStoryServiceImpl implements UserStoryService {
                     }
                 }
 
+
                 projectUserStoryLabelRepository.saveAll(projectUserStoryLabelEntityList);
                 user_story_id = save.getId();
+
+                if(sprint_id!=0) {
+                    Optional<ProjectSprintEntity> sprintEntityOptional = sprintRepository.findById(sprint_id);
+                    if(!sprintEntityOptional.isPresent())
+                        throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Sprint not found");
+                    ProjectSprintUserStoryEntity projectSprintUserStoryEntity_new =
+                            new ProjectSprintUserStoryEntity(
+                                    save,
+                                    new Date(),
+                                    sprintEntityOptional.get(),
+                                    SprintUserStoryStatus.ACTIVE,
+                                    null
+                            );
+                    projectSprintUserStoryRepository.save(projectSprintUserStoryEntity_new);
+                }
             }
 
             Optional<ProjectUserStoryEntity> byId = userStoryRepository.findById(user_story_id);
@@ -283,8 +300,8 @@ public class UserStoryServiceImpl implements UserStoryService {
     }
 
     @Override
-    public List<UserStoryDTO> getProjectBacklog(long id, long corporateId) {
-        log.info("Execute method getProjectBacklog : id: " + id + ", corporateId: " + corporateId);
+    public List<UserStoryDTO> getProjectBacklog(String ref, long corporateId) {
+        log.info("Execute method getProjectBacklog : ref: " + ref + ", corporateId: " + corporateId);
         try {
             UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
             Optional<CorporateEntity> byCorporateId = corporateRepository.findById(corporateId);
@@ -304,7 +321,7 @@ public class UserStoryServiceImpl implements UserStoryService {
                 );
 
             CorporateEmployeeEntity corporateEmployeeEntity = auth_user_admin.get();
-            Optional<ProjectEntity> byProjectId = projectRepository.findById(id);
+            Optional<ProjectEntity> byProjectId = projectRepository.findByRef(ref);
             if(!byProjectId.isPresent())
                 throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
 
@@ -366,7 +383,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                             p.getModifiedDate(),
                             this.prepareCorporateEmployeeDTO(p.getCreated_CorporateEmployeeEntity()),
                             this.prepareCorporateEmployeeDTO(p.getModified_CorporateEmployeeEntity()),
-                            p.getStatusType()
+                            p.getStatusType(),
+                            p.getRef()
                     ),
                     userStoryEntity.getTitle(),
                     userStoryEntity.getDescription(),
@@ -432,7 +450,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                     projectEntity.getModifiedDate(),
                     null,
                     null,
-                    projectEntity.getStatusType()
+                    projectEntity.getStatusType(),
+                    projectEntity.getRef()
             );
 
             //prepare project user story lbl return list

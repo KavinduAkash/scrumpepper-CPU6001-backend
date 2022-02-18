@@ -40,8 +40,8 @@ public class UserStoryController {
 
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity handleUserStory(@RequestBody HandleUserStoryRequestDTO addUserStoryRequestDTO) {
-        UserStoryDTO result = userStoryService.handleUserStory(addUserStoryRequestDTO);
+    public ResponseEntity handleUserStory(@RequestBody HandleUserStoryRequestDTO addUserStoryRequestDTO, @RequestParam("id") long id) {
+        UserStoryDTO result = userStoryService.handleUserStory(addUserStoryRequestDTO, id);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "User story created successfully", result),
                 HttpStatus.OK
@@ -80,7 +80,7 @@ public class UserStoryController {
     }
 
     @GetMapping(value = "/get-project" , produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity addUserStoryLbl(@RequestParam long id, @RequestParam long corporate) {
+    public ResponseEntity addUserStoryLbl(@RequestParam String id, @RequestParam long corporate) {
         List<UserStoryDTO> result = userStoryService.getProjectBacklog(id, corporate);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "User stories found successfully", result),
