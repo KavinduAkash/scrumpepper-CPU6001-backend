@@ -3,6 +3,7 @@ package com.swlc.ScrumPepperCPU6001.controller.user;
 import com.swlc.ScrumPepperCPU6001.dto.ProjectDocDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.CreateDocRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateDocRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.DocsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,19 @@ public class DocsController {
     }
 
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity createCorporate(@RequestBody CreateDocRequestDTO createDocRequestDTO) {
+    public ResponseEntity createDoc(@RequestBody CreateDocRequestDTO createDocRequestDTO) {
         ProjectDocDTO result = docsService.createDoc(createDocRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Document created successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping(value = "/update", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity updateDoc(@RequestBody UpdateDocRequestDTO updateDocRequestDTO) {
+        ProjectDocDTO result = docsService.updateDoc(updateDocRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Document updated successfully", result),
                 HttpStatus.OK
         );
     }

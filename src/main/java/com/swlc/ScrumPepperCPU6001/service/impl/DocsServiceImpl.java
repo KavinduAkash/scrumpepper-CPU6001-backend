@@ -4,6 +4,7 @@ import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.ProjectDTO;
 import com.swlc.ScrumPepperCPU6001.dto.ProjectDocDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.CreateDocRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateDocRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.ProjectDocsEntity;
 import com.swlc.ScrumPepperCPU6001.entity.ProjectEntity;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
@@ -43,6 +44,25 @@ public class DocsServiceImpl implements DocsService {
             return this.prepareProjectDocDTO(save);
         } catch (Exception e) {
             log.error("Method createDoc : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public ProjectDocDTO updateDoc(UpdateDocRequestDTO dto) {
+        log.info("Execute method updateDoc :  Param{} " + dto.toString());
+        try {
+            Optional<ProjectDocsEntity> byId = projectDocsRepository.findById(dto.getId());
+            if(!byId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Unable to update");
+            ProjectDocsEntity projectDocsEntity = byId.get();
+            projectDocsEntity.setName(dto.getName());
+            projectDocsEntity.setDoc(dto.getDoc());
+            projectDocsEntity.setModifiedDate(new Date());
+            ProjectDocsEntity save = projectDocsRepository.save(projectDocsEntity);
+            return this.prepareProjectDocDTO(save);
+        } catch (Exception e) {
+            log.error("Method updateDoc : " + e.getMessage(), e);
             throw e;
         }
     }
