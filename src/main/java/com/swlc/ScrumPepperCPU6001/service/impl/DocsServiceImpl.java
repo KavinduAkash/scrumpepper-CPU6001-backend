@@ -15,7 +15,9 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -63,6 +65,33 @@ public class DocsServiceImpl implements DocsService {
             return this.prepareProjectDocDTO(save);
         } catch (Exception e) {
             log.error("Method updateDoc : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<ProjectDocDTO> getDocs(long id) {
+        log.info("Execute method updateDoc :  id " + id);
+        try {
+            Optional<ProjectEntity> byId = projectRepository.findById(id);
+            if(!byId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+            List<ProjectDocsEntity> allByProjectEntity = projectDocsRepository.findAllByProjectEntity(byId.get());
+            return this.prepareProjectDocDTOList(allByProjectEntity);
+        } catch (Exception e) {
+            log.error("Method updateDoc : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private List<ProjectDocDTO> prepareProjectDocDTOList(List<ProjectDocsEntity> projectDocsEntities) {
+        List<ProjectDocDTO> projectDocDTOS = new ArrayList<>();
+        try {
+            for (ProjectDocsEntity projectDocsEntity : projectDocsEntities) {
+                projectDocDTOS.add(this.prepareProjectDocDTO(projectDocsEntity));
+            }
+            return projectDocDTOS;
+        } catch (Exception e) {
             throw e;
         }
     }

@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author hp
  */
@@ -41,6 +43,15 @@ public class DocsController {
         ProjectDocDTO result = docsService.updateDoc(updateDocRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Document updated successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getDocs(@RequestParam long id) {
+        List<ProjectDocDTO> result = docsService.getDocs(id);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Documents found successfully", result),
                 HttpStatus.OK
         );
     }
