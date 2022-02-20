@@ -1,6 +1,9 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
+import com.swlc.ScrumPepperCPU6001.dto.ProjectDTO;
+import com.swlc.ScrumPepperCPU6001.dto.SppokerDTO;
+import com.swlc.ScrumPepperCPU6001.dto.SprintDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleSppokerRoomRequestDTO;
 import com.swlc.ScrumPepperCPU6001.entity.ProjectEntity;
 import com.swlc.ScrumPepperCPU6001.entity.ProjectSprintEntity;
@@ -14,9 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author hp
@@ -90,4 +91,76 @@ public class SppokerServiceImpl implements SppokerService {
             throw e;
         }
     }
+
+    @Override
+    public List<SppokerDTO> getRoom(long projectId) {
+        log.info("Execute method getRoom :  id " + projectId);
+        try {
+            List<SppokerDTO> list = new ArrayList<>();
+            Optional<ProjectEntity> byId = projectRepository.findById(projectId);
+            if(!byId.isPresent())
+                throw new SppokerException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+            List<SpppokerRoomEntity> byProjectEntity = sppokerRepository.findByProjectEntity(byId.get());
+            for (SpppokerRoomEntity r : byProjectEntity) {
+                list.add(this.prepareSppokerDTO(r));
+            }
+            return list;
+        } catch (Exception e) {
+            log.error("Method getRoom : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private SppokerDTO prepareSppokerDTO(SpppokerRoomEntity r) {
+        try {
+            SprintDTO sprintDTO = null;
+            ProjectSprintEntity projectSprintEntity = r.getProjectSprintEntity();
+            if(projectSprintEntity!=null) {
+                sprintDTO = this.prepareSprintDTO(projectSprintEntity);
+            }
+            ProjectDTO projectDTO = this.prepareProjectDTO(r.getProjectEntity());
+            return new SppokerDTO(r.getId(), r.getNote(), projectDTO, sprintDTO, r.getRoomRef(), r.getStartedDate(), r.getCloseDate(), r.getStatus());
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+
+    private SprintDTO prepareSprintDTO(ProjectSprintEntity save) {
+        try {
+            return new SprintDTO(
+                    save.getId(),
+                    save.getProjectEntity().getId(),
+                    save.getSprintName(),
+                    save.getDescription(),
+                    save.getCreatedDate(),
+                    save.getModifiedDate(),
+                    null,
+                    null,
+                    save.getStatusType()
+            );
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    private ProjectDTO prepareProjectDTO(ProjectEntity p) {
+        try {
+            return new ProjectDTO(
+                    p.getId(),
+                    null,
+                    p.getProjectName(),
+                    p.getCreatedDate(),
+                    p.getModifiedDate(),
+                    null,
+                    null,
+                    p.getStatusType(),
+                    p.getRef()
+            );
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+
 }

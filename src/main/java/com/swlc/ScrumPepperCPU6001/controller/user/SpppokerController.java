@@ -1,15 +1,15 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
-import com.swlc.ScrumPepperCPU6001.dto.SprintDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.AddSprintRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.SppokerDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.HandleSppokerRoomRequestDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.HandleUserStoryRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.SppokerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author hp
@@ -39,6 +39,15 @@ public class SpppokerController {
         boolean result = sppokerService.updateRoom(handleSppokerRoomRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "SPPoker Room created successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/room/get/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getRoom(@PathVariable long projectId) {
+        List<SppokerDTO> result = sppokerService.getRoom(projectId);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "SPPoker Rooms found successfully", result),
                 HttpStatus.OK
         );
     }
