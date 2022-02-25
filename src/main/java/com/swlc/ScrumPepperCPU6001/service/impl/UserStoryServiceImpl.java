@@ -346,6 +346,56 @@ public class UserStoryServiceImpl implements UserStoryService {
         }
     }
 
+    @Override
+    public List<UserStoryDTO> getSprintUseStories(long id) {
+        log.info("Execute method getSprintUseStories : sprint_id: " + id);
+        try {
+
+            Optional<ProjectSprintEntity> sprintById = sprintRepository.findById(id);
+            if(!sprintById.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Sprint not found");
+            ProjectSprintEntity projectSprintEntity = sprintById.get();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+
+            CorporateEntity corporateEntity = projectSprintEntity.getProjectEntity().getCorporateEntity();
+
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+
+            CorporateEmployeeEntity corporateEmployeeEntity = auth_user_admin.get();
+            Optional<ProjectMemberEntity> projectMemberOptional =
+                    projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                            sprintById.get().getProjectEntity(),
+                            corporateEmployeeEntity
+                    );
+
+            if(!projectMemberOptional.isPresent())
+                throw new ProjectException(ApplicationConstant.UN_AUTH_ACTION, "Access Denied");
+
+
+            List<ProjectSprintUserStoryEntity> byUserStoriesBySprint = projectSprintUserStoryRepository.getByUserStoriesBySprint(sprintById.get().getId());
+
+
+            List<UserStoryDTO> userStoryDTOS = new ArrayList<>();
+            for (ProjectSprintUserStoryEntity projectSprintUserStoryEntity : byUserStoriesBySprint) {
+                userStoryDTOS.add(this.prepareUserStoryDTO(projectSprintUserStoryEntity.getProjectUserStoryEntity()));
+            }
+            return userStoryDTOS;
+        } catch (Exception e) {
+            log.error("Method getProjectBacklog : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
     public UserStoryDTO prepareUserStoryDTO(ProjectUserStoryEntity userStoryEntity) {
         log.info("Execute method prepareUserStoryDTO : @Param {} " + (userStoryEntity.getId()==199?userStoryEntity.getDescription():""));
         try {

@@ -13,4 +13,5 @@ public interface UserStoryService {
     UserStoryDTO handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO, long sprint_id);
     boolean updateUserStoryStatus(UpdateUserStoryStatusRequestDTO updateUserStoryStatusRequestDTO);
     List<UserStoryDTO> getProjectBacklog(String ref, long corporateId);
+    List<UserStoryDTO> getSprintUseStories(long id);
 }

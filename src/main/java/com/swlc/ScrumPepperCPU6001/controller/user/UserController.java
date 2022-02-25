@@ -4,12 +4,15 @@ import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.GetUserSearchResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.UserService;
 import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author hp
@@ -70,4 +73,12 @@ public class UserController {
         );
     }
 
+    @PostMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity searchUser(@RequestParam("keyword") String keyword, @RequestParam("corporate") long corporateId, @RequestParam("project") long projectId) {
+        List<GetUserSearchResponseDTO> result = userService.searchUser(keyword, corporateId, projectId);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "", null),
+                HttpStatus.OK
+        );
+    }
 }

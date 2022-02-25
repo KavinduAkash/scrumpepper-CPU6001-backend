@@ -97,5 +97,13 @@ public class UserStoryController {
         );
     }
 
+    @GetMapping(value = "/get-sprint" , produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getSprintUserStories(@RequestParam long id) {
+        List<UserStoryDTO> result = userStoryService.getSprintUseStories(id);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "User stories found successfully", result),
+                HttpStatus.OK
+        );
+    }
 
 }
