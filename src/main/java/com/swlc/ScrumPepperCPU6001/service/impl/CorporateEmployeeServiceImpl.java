@@ -2,11 +2,13 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.constant.EmailTextConstant;
+import com.swlc.ScrumPepperCPU6001.dto.CorporateDTO;
 import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
 import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.ApproveRejectInvitationRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.SearchEmployeeRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.InvitationsResponseDTO;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeInvitationEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEntity;
@@ -123,11 +125,11 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
                     corporateEntity.getName(),
                     userEntity.getFirstName() + " " + userEntity.getLastName()
             );
-            emailSender.sendCorporateInvitations2(
-                    userEntity.getEmail(),
-                    "You have corporate joining invitation",
-                    corporateInvitationTemplate
-            );
+//            emailSender.sendCorporateInvitations2(
+//                    userEntity.getEmail(),
+//                    "You have corporate joining invitation",
+//                    corporateInvitationTemplate
+//            );
             return true;
         } catch (Exception e) {
             log.error("Method addCorporateEmployee : " + e.getMessage(), e);
@@ -218,6 +220,39 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
             return corporateEmployeeDTOS;
         } catch (Exception e) {
             log.error("Method searchCorporateEmployee : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<InvitationsResponseDTO> getInvitations() {
+        log.info("Execute method getInvitations : ");
+        try {
+            UserEntity userEntityToken = tokenValidator.retrieveUserInformationFromAuthentication();
+            List<CorporateEmployeeInvitationEntity> invitationsByUser = corporateEmployeeInvitationRepository.getByUser(userEntityToken);
+            List<InvitationsResponseDTO> invitationsList = new ArrayList<>();
+            for (CorporateEmployeeInvitationEntity i : invitationsByUser) {
+                invitationsList.add(
+                        new InvitationsResponseDTO(
+                                i.getId(),
+                                i.getDate(),
+                                new CorporateDTO(
+                                        i.getCorporateEmployeeEntity().getCorporateEntity().getId(),
+                                        i.getCorporateEmployeeEntity().getCorporateEntity().getName(),
+                                        i.getCorporateEmployeeEntity().getCorporateEntity().getAddress(),
+                                        i.getCorporateEmployeeEntity().getCorporateEntity().getContactNumber1(),
+                                        i.getCorporateEmployeeEntity().getCorporateEntity().getContactNumber2(),
+                                        i.getCorporateEmployeeEntity().getCorporateEntity().getEmail(),
+                                        i.getCorporateEmployeeEntity().getCorporateEntity().getCorporateLogo(),
+                                        i.getCorporateEmployeeEntity().getCorporateEntity().getStatusType()
+                                ),
+                                i.getStatusType()
+                        )
+                );
+            }
+            return invitationsList;
+        } catch (Exception e) {
+            log.error("Method getInvitations : " + e.getMessage(), e);
             throw e;
         }
     }

@@ -77,7 +77,7 @@ public class UserController {
     public ResponseEntity searchUser(@RequestParam("keyword") String keyword, @RequestParam("corporate") long corporateId, @RequestParam("project") long projectId) {
         List<GetUserSearchResponseDTO> result = userService.searchUser(keyword, corporateId, projectId);
         return new ResponseEntity<>(
-                new CommonResponseDTO(true, "", null),
+                new CommonResponseDTO(true, "", result),
                 HttpStatus.OK
         );
     }

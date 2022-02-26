@@ -15,6 +15,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmail(String email);
     Optional<UserEntity> findByRefNo(String refNo);
     Optional<UserEntity> findByEmailAndStatusType(String email, StatusType statusType);
-    @Query(value = "SELECT * FROM user u WHERE u.refNO LIKE %?1% OR u.email LIKE %?1%", nativeQuery = true)
+    @Query(value = "SELECT * FROM user u WHERE u.ref_no LIKE %?1% OR u.email LIKE %?1%", nativeQuery = true)
     List<UserEntity> searchUser(String keyword);
 }
