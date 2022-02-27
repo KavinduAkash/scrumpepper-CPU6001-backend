@@ -78,6 +78,8 @@ public class ResourceServerConfigurer extends ResourceServerConfigurerAdapter {
                 .access("hasAnyRole('ROLE_USER')")
                 .antMatchers(HttpMethod.GET, ApplicationConstant.API_BASE_URL + "/sprint/get")
                 .access("hasAnyRole('ROLE_USER')")
+                .antMatchers(HttpMethod.PATCH, ApplicationConstant.API_BASE_URL + "/sprint/start")
+                .access("hasAnyRole('ROLE_USER')")
 // ------------ /docs ---------------------------------------------------------------------=--------------------------
                 .antMatchers(HttpMethod.POST, ApplicationConstant.API_BASE_URL + "/docs/create")
                 .access("hasAnyRole('ROLE_USER')")

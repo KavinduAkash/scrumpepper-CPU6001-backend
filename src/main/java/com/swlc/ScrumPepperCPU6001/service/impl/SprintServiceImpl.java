@@ -458,6 +458,73 @@ public class SprintServiceImpl implements SprintService {
 
     }
 
+    @Override
+    public boolean startSprint(long sprintId) {
+        log.info("Execute method startSprint : ");
+        try {
+            // user find
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            // sprint find
+            Optional<ProjectSprintEntity> sprintById = sprintRepository.findById(sprintId);
+            if(!sprintById.isPresent()) throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Sprint not found");
+            // validate user with sprint
+            ProjectSprintEntity projectSprintEntity = sprintById.get();
+            ProjectEntity projectEntity = projectSprintEntity.getProjectEntity();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+            validateSprintUser(userAdminEntity, corporateEntity, projectEntity);
+            // check sprint start or not
+            SprintStatusType statusType = projectSprintEntity.getStatusType();
+            if(statusType.equals(SprintStatusType.PROCESSING)) {
+                throw new ProjectException(ApplicationConstant.ALREADY_STARTED, "Sprint already started");
+            } else if(statusType.equals(SprintStatusType.COMPLETED)) {
+                throw new ProjectException(ApplicationConstant.ALREADY_COMPLETED, "Sprint already completed");
+            } else if(statusType.equals(SprintStatusType.DELETE)) {
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Sprint not found");
+            }
+            // if not start, start the sprint
+            projectSprintEntity.setStatusType(SprintStatusType.PROCESSING);
+            sprintRepository.save(projectSprintEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method startSprint : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private boolean validateSprintUser(UserEntity userAdminEntity, CorporateEntity corporateEntity, ProjectEntity projectEntity) {
+        log.info("Execute method validateSprintUser : ");
+        try {
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                        projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                projectEntity,
+                                auth_user_admin.get()
+                        );
+                if (!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Method validateSprintUser : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
     private List<SprintResponseDTO> prepareSprintResponseDTO(List<ProjectSprintEntity> sprintEntities) {
         try {
             List<SprintResponseDTO> sprintResponseDTOS = new ArrayList<>();

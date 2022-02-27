@@ -53,4 +53,15 @@ public class SprintController {
                 HttpStatus.OK
         );
     }
+
+
+// ------------------------------------------------ Sprint Management --------------------------------------------------
+    @PatchMapping(value = "/start", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity startSprint(@RequestParam("id") long sprintId) {
+        boolean result = sprintService.startSprint(sprintId);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Sprint started successfully", null),
+                HttpStatus.OK
+        );
+    }
 }

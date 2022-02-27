@@ -18,4 +18,9 @@ public class ApplicationConstant {
     public static final int UNABLE_TO_SEND_EMAIL = 422;
     public static final int UNABLE_UPLOAD_FILE = 421;
 
+
+    // Sprint Management
+    public static final int ALREADY_STARTED = 431;
+    public static final int ALREADY_COMPLETED = 432;
+
 }

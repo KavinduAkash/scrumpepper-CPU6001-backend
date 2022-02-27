@@ -16,4 +16,5 @@ public interface SprintService {
     SprintDTO updateSprint(UpdateSprintRequestDTO updateSprintRequestDTO);
     List<SprintResponseDTO> getProjectSprints(long projectId);
     boolean userStoryMove(MoveUserStoryRequestDTO moveUserStoryRequestDTO);
+    boolean startSprint(long sprintId);
 }
