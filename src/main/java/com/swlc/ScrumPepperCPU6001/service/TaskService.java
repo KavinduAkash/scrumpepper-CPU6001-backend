@@ -13,4 +13,5 @@ public interface TaskService {
     TaskDTO addMemberToTask(long taskId, long id);
     TaskDTO removedMemberFromTask(long taskId, long id);
     List<TaskDTO> getAllTasksOfProject(long userStoryId);
+    List<TaskDTO> changeTaskStatus(long taskId, String status);
 }

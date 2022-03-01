@@ -37,6 +37,7 @@ public class TasksServiceImpl implements TaskService {
     private final CorporateRepository corporateRepository;
     private final SprintRepository sprintRepository;
     private final ProjectSprintUserStoryRepository projectSprintUserStoryRepository;
+    private final TaskTrackRepository taskTrackRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
@@ -50,7 +51,7 @@ public class TasksServiceImpl implements TaskService {
                             ProjectUserStoryLabelRepository projectUserStoryLabelRepository,
                             CorporateRepository corporateRepository,
                             SprintRepository sprintRepository,
-                            ProjectSprintUserStoryRepository projectSprintUserStoryRepository) {
+                            ProjectSprintUserStoryRepository projectSprintUserStoryRepository, TaskTrackRepository taskTrackRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
@@ -62,6 +63,7 @@ public class TasksServiceImpl implements TaskService {
         this.corporateRepository = corporateRepository;
         this.sprintRepository = sprintRepository;
         this.projectSprintUserStoryRepository = projectSprintUserStoryRepository;
+        this.taskTrackRepository = taskTrackRepository;
     }
 
     @Override
@@ -110,6 +112,7 @@ public class TasksServiceImpl implements TaskService {
                 projectTaskEntity.setTitle(task.getTitle());
                 projectTaskEntity.setStatusType(task.getStatusType());
                 save = projectTaskRepository.save(projectTaskEntity);
+                taskTrackRepository.save(new TaskTrackEntity(save, save.getStatusType(), new Date()));
             } else {
                 save = projectTaskRepository.save(
                         new ProjectTaskEntity(
@@ -255,10 +258,79 @@ public class TasksServiceImpl implements TaskService {
             Optional<ProjectUserStoryEntity> projectUserStoryOptional = userStoryRepository.findById(userStoryId);
             if(!projectUserStoryOptional.isPresent())
                 throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "User story not found");
-            List<ProjectTaskEntity> allByProjectUserStoryEntity = projectTaskRepository.findAllByProjectUserStoryEntity(projectUserStoryOptional.get());
-            return this.prepareTaskDTOList(allByProjectUserStoryEntity);
+            return this.getAllTasks(projectUserStoryOptional.get());
         } catch (Exception e) {
             log.error("Method getAllTasksOfProject : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<TaskDTO> changeTaskStatus(long taskId, String status) {
+        log.info("Execute method changeTaskStatus: ");
+        try {
+            Optional<ProjectTaskEntity> projectTaskById = projectTaskRepository.findById(taskId);
+            if(!projectTaskById.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.RESOURCE_NOT_FOUND,
+                        "Task not found"
+                );
+            ProjectUserStoryEntity projectUserStoryEntity = projectTaskById.get().getProjectUserStoryEntity();
+            ProjectEntity projectEntity = projectUserStoryEntity.getProjectEntity();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                        projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                projectEntity,
+                                auth_user_admin.get()
+                        );
+                if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+            }
+            ProjectTaskEntity task = projectTaskById.get();
+            switch (status) {
+                case "TODO":
+                    task.setStatusType(UserStoryStatusType.TODO);
+                    break;
+                case "PROCESSING":
+                    task.setStatusType(UserStoryStatusType.PROCESSING);
+                    break;
+                case "COMPLETED":
+                    task.setStatusType(UserStoryStatusType.COMPLETED);
+                    break;
+                default:
+                    break;
+            }
+            ProjectTaskEntity savedTask = projectTaskRepository.save(task);
+            taskTrackRepository.save(new TaskTrackEntity(savedTask, savedTask.getStatusType(), new Date()));
+            return this.getAllTasks(savedTask.getProjectUserStoryEntity());
+        } catch (Exception e) {
+            log.error("Method changeTaskStatus : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private List<TaskDTO> getAllTasks(ProjectUserStoryEntity userStoryEntity) {
+        try {
+            List<ProjectTaskEntity> allByProjectUserStoryEntity = projectTaskRepository.findAllByProjectUserStoryEntity(userStoryEntity);
+            return this.prepareTaskDTOList(allByProjectUserStoryEntity);
+        } catch (Exception e) {
             throw e;
         }
     }

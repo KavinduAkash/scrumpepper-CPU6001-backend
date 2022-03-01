@@ -37,6 +37,15 @@ public class TaskController {
         );
     }
 
+    @PatchMapping(value = "/status",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity handleTaskStatus(@RequestParam("id") long taskId, @RequestParam("status") String status) {
+        List<TaskDTO> result = taskService.changeTaskStatus(taskId, status);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Task status changed successfully", result),
+                HttpStatus.OK
+        );
+    }
+
     @PatchMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity assignMembersToTask(@RequestBody AddProjectTasksAssignsRequestDTO addProjectTasksAssignsRequestDTO) {
         TaskDTO result = taskService.addMemberToTask(addProjectTasksAssignsRequestDTO.getTaskId(), addProjectTasksAssignsRequestDTO.getCorporateEmployeeId());
