@@ -13,6 +13,8 @@ import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,6 +26,7 @@ import java.util.Optional;
  */
 @Log4j2
 @Service
+@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 public class TasksServiceImpl implements TaskService {
 
     private final UserStoryRepository userStoryRepository;
@@ -38,6 +41,7 @@ public class TasksServiceImpl implements TaskService {
     private final SprintRepository sprintRepository;
     private final ProjectSprintUserStoryRepository projectSprintUserStoryRepository;
     private final TaskTrackRepository taskTrackRepository;
+    private final UserStoryTrackRepository userStoryTrackRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
@@ -51,7 +55,7 @@ public class TasksServiceImpl implements TaskService {
                             ProjectUserStoryLabelRepository projectUserStoryLabelRepository,
                             CorporateRepository corporateRepository,
                             SprintRepository sprintRepository,
-                            ProjectSprintUserStoryRepository projectSprintUserStoryRepository, TaskTrackRepository taskTrackRepository) {
+                            ProjectSprintUserStoryRepository projectSprintUserStoryRepository, TaskTrackRepository taskTrackRepository, UserStoryTrackRepository userStoryTrackRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
@@ -64,6 +68,7 @@ public class TasksServiceImpl implements TaskService {
         this.sprintRepository = sprintRepository;
         this.projectSprintUserStoryRepository = projectSprintUserStoryRepository;
         this.taskTrackRepository = taskTrackRepository;
+        this.userStoryTrackRepository = userStoryTrackRepository;
     }
 
     @Override
@@ -266,6 +271,7 @@ public class TasksServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public List<TaskDTO> changeTaskStatus(long taskId, String status) {
         log.info("Execute method changeTaskStatus: ");
         try {
@@ -319,6 +325,12 @@ public class TasksServiceImpl implements TaskService {
             }
             ProjectTaskEntity savedTask = projectTaskRepository.save(task);
             taskTrackRepository.save(new TaskTrackEntity(savedTask, savedTask.getStatusType(), new Date()));
+            UserStoryStatusType statusType = projectUserStoryEntity.getStatusType();
+            if(!statusType.equals(UserStoryStatusType.PROCESSING)) {
+                projectUserStoryEntity.setStatusType(UserStoryStatusType.PROCESSING);
+                ProjectUserStoryEntity savedUserStory = userStoryRepository.save(projectUserStoryEntity);
+                userStoryTrackRepository.save(new UserStoryTrackEntity(savedUserStory, savedUserStory.getStatusType(), new Date()));
+            }
             return this.getAllTasks(savedTask.getProjectUserStoryEntity());
         } catch (Exception e) {
             log.error("Method changeTaskStatus : " + e.getMessage(), e);
