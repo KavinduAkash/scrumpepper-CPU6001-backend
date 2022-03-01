@@ -17,4 +17,5 @@ public interface ProjectMemberService {
     boolean removeProjectMember(long projectMemberId);
     List<CorporateEmployeeDTO> getProjectMember(long projectMemberId);
     GetTaskEmployeeDTO getTaskMembers(long taskId);
+    List<ProjectMemberDTO> getProjectTeam(long projectId);
 }

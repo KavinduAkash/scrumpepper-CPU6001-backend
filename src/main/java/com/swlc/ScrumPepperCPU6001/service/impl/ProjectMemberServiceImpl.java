@@ -2,6 +2,7 @@ package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
+import com.swlc.ScrumPepperCPU6001.dto.ProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
@@ -271,6 +272,57 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
                     this.prepareCorporateEmployeeDTOList(otherCorporateEmployees)
             );
         } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public List<ProjectMemberDTO> getProjectTeam(long projectId) {
+        log.info("Execute method getProjectTeam : project-id " + projectId);
+        try {
+            Optional<ProjectEntity> byId = projectRepository.findById(projectId);
+            if(!byId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+
+            CorporateEntity corporateEntity = byId.get().getCorporateEntity();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN)))
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+
+            List<ProjectMemberEntity> projectMembers = projectMemberRepository.findByProjectEntity(byId.get());
+            List<ProjectMemberDTO> projectMemberList = new ArrayList<>();
+            for (ProjectMemberEntity pm : projectMembers) {
+                projectMemberList.add(
+                        new ProjectMemberDTO(
+                                pm.getId(),
+                                this.prepareCorporateEmployeeDTO(
+                                        pm.getCorporateEmployeeEntity()
+                                ),
+                                pm.getAssignedDate(),
+                                pm.getModifiedDate(),
+                                pm.getScrumRole(),
+                                pm.getStatusType()
+                        )
+                );
+            }
+            return projectMemberList;
+        } catch (Exception e) {
+            log.error("Method getProjectTeam : " + e.getMessage(), e);
             throw e;
         }
     }

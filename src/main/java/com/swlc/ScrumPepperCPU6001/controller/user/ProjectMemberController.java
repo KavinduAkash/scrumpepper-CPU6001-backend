@@ -1,8 +1,8 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
+import com.swlc.ScrumPepperCPU6001.dto.ProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.GetTaskEmployeeDTO;
@@ -75,5 +75,13 @@ public class ProjectMemberController {
         );
     }
 
+    @GetMapping(value = "/get-team", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getProjectTeam(@RequestParam("id") long projectId) {
+        List<ProjectMemberDTO> result = projectMemberService.getProjectTeam(projectId);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project team found successfully", result),
+                HttpStatus.OK
+        );
+    }
 
 }
