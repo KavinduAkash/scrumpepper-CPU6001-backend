@@ -24,6 +24,7 @@ public class HandleUserStoryRequestDTO {
     private List<String> userStoryLabels;
     private UserStoryStatusType statusType;
     private Priority priority;
+    private int points;
 
     @Override
     public String toString() {
@@ -35,6 +36,7 @@ public class HandleUserStoryRequestDTO {
                 ", userStoryLabels=" + userStoryLabels +
                 ", statusType=" + statusType +
                 ", priority=" + priority +
+                ", points=" + points +
                 '}';
     }
 }

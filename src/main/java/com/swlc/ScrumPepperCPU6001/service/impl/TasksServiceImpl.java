@@ -480,7 +480,8 @@ public class TasksServiceImpl implements TaskService {
                     userStoryEntity.getPriority(),
                     null,
                     sprintDTOList,
-                    currentSprint
+                    currentSprint,
+                    userStoryEntity.getPoints()
             );
         } catch (Exception e) {
             log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);

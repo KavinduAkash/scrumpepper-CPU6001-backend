@@ -45,10 +45,10 @@ public class ProjectUserStoryEntity {
     private UserStoryStatusType statusType;
     @Enumerated(EnumType.STRING)
     private Priority priority;
+    @Column
+    private int points;
 
-    public ProjectUserStoryEntity(ProjectEntity projectEntity, String title, String description, Date createdDate,
-                                  Date modifiedDate, CorporateEmployeeEntity createdBy, CorporateEmployeeEntity modifiedBy,
-                                  UserStoryStatusType statusType, Priority priority) {
+    public ProjectUserStoryEntity(ProjectEntity projectEntity, String title, String description, Date createdDate, Date modifiedDate, CorporateEmployeeEntity createdBy, CorporateEmployeeEntity modifiedBy, UserStoryStatusType statusType, Priority priority, int points) {
         this.projectEntity = projectEntity;
         this.title = title;
         this.description = description;
@@ -58,6 +58,7 @@ public class ProjectUserStoryEntity {
         this.modifiedBy = modifiedBy;
         this.statusType = statusType;
         this.priority = priority;
+        this.points = points;
     }
 
     @Override
@@ -73,6 +74,7 @@ public class ProjectUserStoryEntity {
                 ", modifiedBy=" + modifiedBy +
                 ", statusType=" + statusType +
                 ", priority=" + priority +
+                ", points=" + points +
                 '}';
     }
 }

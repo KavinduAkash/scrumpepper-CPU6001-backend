@@ -32,6 +32,7 @@ public class UserStoryDTO {
     private List<TaskDTO> tasks;
     private List<SprintDTO> otherSprints;
     private SprintDTO Sprint;
+    private int points;
 
     @Override
     public String toString() {
@@ -48,6 +49,9 @@ public class UserStoryDTO {
                 ", userStoryLbl=" + userStoryLbl +
                 ", priority=" + priority +
                 ", tasks=" + tasks +
+                ", otherSprints=" + otherSprints +
+                ", Sprint=" + Sprint +
+                ", points=" + points +
                 '}';
     }
 }

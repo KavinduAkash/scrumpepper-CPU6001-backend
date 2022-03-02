@@ -40,10 +40,11 @@ public class UserStoryServiceImpl implements UserStoryService {
     private final TaskService taskService;
     private final SprintRepository sprintRepository;
     private final ProjectSprintUserStoryRepository projectSprintUserStoryRepository;
+    private final StoryPointsTrackRepository storyPointsTrackRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
-    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository, TaskService taskService, SprintRepository sprintRepository, ProjectSprintUserStoryRepository projectSprintUserStoryRepository) {
+    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository, TaskService taskService, SprintRepository sprintRepository, ProjectSprintUserStoryRepository projectSprintUserStoryRepository, StoryPointsTrackRepository storyPointsTrackRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
@@ -54,12 +55,13 @@ public class UserStoryServiceImpl implements UserStoryService {
         this.taskService = taskService;
         this.sprintRepository = sprintRepository;
         this.projectSprintUserStoryRepository = projectSprintUserStoryRepository;
+        this.storyPointsTrackRepository = storyPointsTrackRepository;
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public UserStoryDTO handleUserStory(HandleUserStoryRequestDTO addUserStoryRequestDTO, long sprint_id) {
-        log.info("Execute method createNewUserStory : addUserStoryRequestDTO : " + addUserStoryRequestDTO.toString());
+        log.info("============== Execute method createNewUserStory : addUserStoryRequestDTO : " + addUserStoryRequestDTO.toString());
         try {
             Optional<ProjectEntity> projectById = projectRepository.findById(addUserStoryRequestDTO.getProjectId());
             if(!projectById.isPresent())
@@ -112,6 +114,7 @@ public class UserStoryServiceImpl implements UserStoryService {
                 projectUserStoryEntity.setModifiedDate(new Date());
                 projectUserStoryEntity.setModifiedBy(auth_user_admin.get());
                 projectUserStoryEntity.setPriority(addUserStoryRequestDTO.getPriority());
+                projectUserStoryEntity.setPoints(addUserStoryRequestDTO.getPoints());
                 ProjectUserStoryEntity save = userStoryRepository.save(projectUserStoryEntity);
 
                 List<String> userStoryLabels = addUserStoryRequestDTO.getUserStoryLabels();
@@ -159,7 +162,7 @@ public class UserStoryServiceImpl implements UserStoryService {
                     }
                     projectUserStoryLabelRepository.saveAll(projectUserStories);
                 }
-
+                log.info("==============X Execute method createNewUserStory : ");
             } else {
                 ProjectUserStoryEntity save = userStoryRepository.save(
                         new ProjectUserStoryEntity(
@@ -171,7 +174,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                                 auth_user_admin.get(),
                                 auth_user_admin.get(),
                                 UserStoryStatusType.TODO,
-                                addUserStoryRequestDTO.getPriority()
+                                addUserStoryRequestDTO.getPriority(),
+                                addUserStoryRequestDTO.getPoints()
                         )
                 );
 
@@ -214,6 +218,15 @@ public class UserStoryServiceImpl implements UserStoryService {
                             );
                     projectSprintUserStoryRepository.save(projectSprintUserStoryEntity_new);
                 }
+
+                  storyPointsTrackRepository.save(
+                          new StoryPointsTrackEntity(
+                                  save,
+                                  save.getPoints(),
+                                  new Date()
+                          )
+                  );
+
             }
 
             Optional<ProjectUserStoryEntity> byId = userStoryRepository.findById(user_story_id);
@@ -447,7 +460,8 @@ public class UserStoryServiceImpl implements UserStoryService {
                     userStoryEntity.getPriority(),
                     taskService.getAllTasksOfProject(userStoryEntity.getId()),
                     sprintDTOList,
-                    currentSprint
+                    currentSprint,
+                    userStoryEntity.getPoints()
             );
 
         } catch (Exception e) {
