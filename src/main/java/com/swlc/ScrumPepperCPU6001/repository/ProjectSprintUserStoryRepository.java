@@ -15,4 +15,7 @@ public interface ProjectSprintUserStoryRepository extends JpaRepository<ProjectS
 
     @Query(value = "SELECT * FROM project_sprint_user_story su WHERE su.project_sprint_id=?1 AND su.status='ACTIVE' ORDER BY su.added_date", nativeQuery = true)
     List<ProjectSprintUserStoryEntity> getByUserStoriesBySprint(long id);
+
+    @Query(value = "SELECT SUM(u.points) FROM project_sprint_user_story su, project_user_story u WHERE su.project_user_story_id=u.id AND su.project_sprint_id=?1 AND su.status='ACTIVE' ORDER BY su.added_date", nativeQuery = true)
+    Integer getTotalPoints(long id);
 }
