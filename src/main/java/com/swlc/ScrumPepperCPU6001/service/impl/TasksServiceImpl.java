@@ -72,6 +72,7 @@ public class TasksServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public TaskDTO createNewTask(AddProjectTaskRequestDTO task) {
         log.info("Execute method createNewTask : email : " + task.toString());
         try {
