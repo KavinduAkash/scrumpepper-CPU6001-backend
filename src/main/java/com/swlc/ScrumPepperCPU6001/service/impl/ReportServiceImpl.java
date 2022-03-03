@@ -77,19 +77,29 @@ public class ReportServiceImpl implements ReportService {
             int totalPoints = sprintUserStoryRepository.getTotalPoints(sprintById.get().getId());
             log.info("Total points: " + totalPoints);
             // calculate ideals
-            int i = 1;
+            int i = 0;
+            int remainingEffort = totalPoints;
             List<BurnDownDataDTO> burnDownData = new ArrayList<>();
-            for (LocalDate date : datesBetween) {
-                int ideal = totalPoints - ((totalPoints / datesBetween.size()) * i);
+            for (int x=0; x<datesBetween.size(); x++) {
+                LocalDate date = datesBetween.get(x);
+                if(dateManager.isWeekend(date)) {
+                    i = i - 1;
+                }
+                int ideal = totalPoints - ((totalPoints / datesBetween.size())*i);
                 log.info("Ideal: " + ideal);
                 log.info("Id: " + sprintById.get().getId());
                 log.info("Date: " + date.toString());
                 i = i + 1;
-                int dayTrackPoints = userStoryTrackRepository.getDayTrackPoints(sprintById.get().getId(), date.toString());
+                int dayTrackPoints = totalPoints;
+                if(x!=0) {
+                    dayTrackPoints = userStoryTrackRepository.getDayTrackPoints(sprintById.get().getId(), datesBetween.get(x-1).toString());
+                }
+                int remainingDayEffort = remainingEffort - dayTrackPoints;
+                remainingEffort = remainingDayEffort;
                 log.info("Points: " + dayTrackPoints);
-                burnDownData.add(new BurnDownDataDTO(date, date.toString(), dayTrackPoints, ideal));
+                burnDownData.add(new BurnDownDataDTO(date, date.toString(), remainingDayEffort, ideal));
             }
-            return new BurnDownChartResponseDTO(null, burnDownData);
+            return new BurnDownChartResponseDTO(null, totalPoints, burnDownData);
         } catch (Exception e) {
             log.error("Method getSprintBurnDownChart: " + e.getMessage(), e);
             throw e;

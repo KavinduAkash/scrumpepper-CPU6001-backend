@@ -18,7 +18,7 @@ import java.util.Date;
 public class BurnDownDataDTO {
     private LocalDate date;
     private String label;
-    private int donePoints;
+    private int remainingEffortPoints;
     private int idealPoints;
 
     @Override
@@ -26,7 +26,7 @@ public class BurnDownDataDTO {
         return "BurnDownDataDTO{" +
                 "date=" + date +
                 ", label='" + label + '\'' +
-                ", donePoints=" + donePoints +
+                ", remainingEffortPoints=" + remainingEffortPoints +
                 ", idealPoints=" + idealPoints +
                 '}';
     }

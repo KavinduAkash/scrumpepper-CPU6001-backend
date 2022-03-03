@@ -18,12 +18,14 @@ import java.util.List;
 @Setter
 public class BurnDownChartResponseDTO {
     private SprintDTO sprint;
+    private int ideal;
     private List<BurnDownDataDTO> data;
 
     @Override
     public String toString() {
         return "BurnDownChartResponseDTO{" +
                 "sprint=" + sprint +
+                ", ideal=" + ideal +
                 ", data=" + data +
                 '}';
     }
