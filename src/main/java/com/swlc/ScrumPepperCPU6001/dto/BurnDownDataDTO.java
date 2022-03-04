@@ -19,7 +19,8 @@ public class BurnDownDataDTO {
     private LocalDate date;
     private String label;
     private int remainingEffortPoints;
-    private int idealPoints;
+    private Double idealPoints;
+    private boolean active;
 
     @Override
     public String toString() {

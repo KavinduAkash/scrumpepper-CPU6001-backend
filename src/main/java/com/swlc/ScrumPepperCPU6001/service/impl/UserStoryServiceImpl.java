@@ -41,10 +41,11 @@ public class UserStoryServiceImpl implements UserStoryService {
     private final SprintRepository sprintRepository;
     private final ProjectSprintUserStoryRepository projectSprintUserStoryRepository;
     private final StoryPointsTrackRepository storyPointsTrackRepository;
+    private final UserStoryTrackRepository userStoryTrackRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
-    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository, TaskService taskService, SprintRepository sprintRepository, ProjectSprintUserStoryRepository projectSprintUserStoryRepository, StoryPointsTrackRepository storyPointsTrackRepository) {
+    public UserStoryServiceImpl(UserStoryRepository userStoryRepository, ProjectRepository projectRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, UserStoryLabelRepository userStoryLabelRepository, ProjectUserStoryLabelRepository projectUserStoryLabelRepository, CorporateRepository corporateRepository, TaskService taskService, SprintRepository sprintRepository, ProjectSprintUserStoryRepository projectSprintUserStoryRepository, StoryPointsTrackRepository storyPointsTrackRepository, UserStoryTrackRepository userStoryTrackRepository) {
         this.userStoryRepository = userStoryRepository;
         this.projectRepository = projectRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
@@ -56,6 +57,7 @@ public class UserStoryServiceImpl implements UserStoryService {
         this.sprintRepository = sprintRepository;
         this.projectSprintUserStoryRepository = projectSprintUserStoryRepository;
         this.storyPointsTrackRepository = storyPointsTrackRepository;
+        this.userStoryTrackRepository = userStoryTrackRepository;
     }
 
     @Override
@@ -305,6 +307,10 @@ public class UserStoryServiceImpl implements UserStoryService {
             }
             projectUserStoryEntity.setStatusType(updateUserStoryStatusRequestDTO.getStatus());
             userStoryRepository.save(projectUserStoryEntity);
+                projectUserStoryEntity.setStatusType(updateUserStoryStatusRequestDTO.getStatus());
+                ProjectUserStoryEntity savedUserStory = userStoryRepository.save(projectUserStoryEntity);
+                userStoryTrackRepository.save(new UserStoryTrackEntity(savedUserStory, savedUserStory.getStatusType(), new Date()));
+
             return true;
         } catch (Exception e) {
             log.error("Method updateUserStoryStatus : " + e.getMessage(), e);

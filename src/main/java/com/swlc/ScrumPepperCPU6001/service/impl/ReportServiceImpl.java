@@ -70,35 +70,62 @@ public class ReportServiceImpl implements ReportService {
             LocalDate localDateEnd = dateManager.convertToLocalDateViaMilisecond(endDate);
             List<LocalDate> datesBetween = dateManager.getDatesBetween(localDateStart, localDateEnd);
             datesBetween.add(localDateEnd);
+
             log.info("Now: " + new Date());
             log.info("Sprint Start Date: " + localDateStart);
             log.info("Sprint End Date: " + localDateEnd);
             log.info("Between Dates: " + datesBetween);
+
+
             int totalPoints = sprintUserStoryRepository.getTotalPoints(sprintById.get().getId());
             log.info("Total points: " + totalPoints);
             // calculate ideals
+
+            int weekendDays = 1;
+
+            for (LocalDate date :datesBetween) {
+                if(dateManager.isWeekend(date)) {
+                    weekendDays = weekendDays + 1;
+                }
+            }
+
+
             int i = 0;
+            boolean st = true;
             int remainingEffort = totalPoints;
             List<BurnDownDataDTO> burnDownData = new ArrayList<>();
             for (int x=0; x<datesBetween.size(); x++) {
+                log.info("------------------------");
                 LocalDate date = datesBetween.get(x);
-                if(dateManager.isWeekend(date)) {
-                    i = i - 1;
+
+                if(date==null) {
+//                    if(st) {
+//                        burnDownData.add(new BurnDownDataDTO(null, "start", totalPoints, totalPoints, true));
+//                        st = false;
+//                    } else {
+//                        burnDownData.add(new BurnDownDataDTO(null, "end", 0, 0, true));
+//                    }
+                } else {
+                    if(dateManager.isWeekend(date)) {
+                        i = i - 1;
+                    }
+                    Double xxx = (Double.valueOf(totalPoints) / (datesBetween.size()-weekendDays))*i;
+                    Double ideal = totalPoints - (xxx);
+
+
+                    i = i + 1;
+                    int dayTrackPoints = userStoryTrackRepository.getDayTrackPoints(sprintById.get().getId(), datesBetween.get(x).toString());
+                    int remainingDayEffort = remainingEffort - dayTrackPoints;
+                    remainingEffort = remainingDayEffort;
+                    log.info("Date -> " + date.toString());
+                    log.info("1. Ideal: " + ideal);
+                    log.info("2. Points: " + dayTrackPoints);
+                    log.info("3. Remain: " + remainingDayEffort);
+
+                    burnDownData.add(new BurnDownDataDTO(date, date.toString(), remainingDayEffort, ideal, true));
                 }
-                int ideal = totalPoints - ((totalPoints / datesBetween.size())*i);
-                log.info("Ideal: " + ideal);
-                log.info("Id: " + sprintById.get().getId());
-                log.info("Date: " + date.toString());
-                i = i + 1;
-                int dayTrackPoints = totalPoints;
-                if(x!=0) {
-                    dayTrackPoints = userStoryTrackRepository.getDayTrackPoints(sprintById.get().getId(), datesBetween.get(x-1).toString());
-                }
-                int remainingDayEffort = remainingEffort - dayTrackPoints;
-                remainingEffort = remainingDayEffort;
-                log.info("Points: " + dayTrackPoints);
-                burnDownData.add(new BurnDownDataDTO(date, date.toString(), remainingDayEffort, ideal));
             }
+
             return new BurnDownChartResponseDTO(null, totalPoints, burnDownData);
         } catch (Exception e) {
             log.error("Method getSprintBurnDownChart: " + e.getMessage(), e);
