@@ -5,16 +5,12 @@ import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateUserRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.GetUserSearchResponseDTO;
-import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
-import com.swlc.ScrumPepperCPU6001.entity.CorporateEntity;
-import com.swlc.ScrumPepperCPU6001.entity.UserEntity;
+import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.UserException;
-import com.swlc.ScrumPepperCPU6001.repository.CorporateEmployeeRepository;
-import com.swlc.ScrumPepperCPU6001.repository.CorporateRepository;
-import com.swlc.ScrumPepperCPU6001.repository.UserRepository;
+import com.swlc.ScrumPepperCPU6001.repository.*;
 import com.swlc.ScrumPepperCPU6001.service.UserService;
 import com.swlc.ScrumPepperCPU6001.util.TokenValidator;
 import lombok.extern.log4j.Log4j2;
@@ -37,15 +33,19 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final CorporateRepository corporateRepository;
     private final CorporateEmployeeRepository corporateEmployeeRepository;
+    private final ProjectMemberRepository projectMemberRepository;
+    private final ProjectRepository projectRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private TokenValidator tokenValidator;
 
-    public UserServiceImpl(UserRepository userRepository, CorporateRepository corporateRepository, CorporateEmployeeRepository corporateEmployeeRepository) {
+    public UserServiceImpl(UserRepository userRepository, CorporateRepository corporateRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectMemberRepository projectMemberRepository, ProjectRepository projectRepository) {
         this.userRepository = userRepository;
         this.corporateRepository = corporateRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
+        this.projectMemberRepository = projectMemberRepository;
+        this.projectRepository = projectRepository;
     }
 
     @Override
@@ -181,20 +181,45 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<GetUserSearchResponseDTO> searchUser(String keyword, long corporateId, long projectId) {
-        log.info("Execute method searchUser : ");
+        log.info("Execute method searchUser : " + keyword);
+        log.info("Execute method searchUser : " + corporateId);
+        log.info("Execute method searchUser : " + projectId);
         try {
             List<GetUserSearchResponseDTO> userSearchList = new ArrayList<>();
             Optional<CorporateEntity> corporateById = corporateRepository.findById(corporateId);
             if(!corporateById.isPresent())
                 throw new CorporateException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate account not found");
-            List<UserEntity> userEntities = userRepository.searchUser(keyword);
+            List<UserEntity> userEntities = new ArrayList<>();
+            log.info("Execute method searchUser : 1");
+            ProjectEntity projectEntity = null;
+            if(projectId!=0) {
+                Optional<ProjectEntity> projectById = projectRepository.findById(projectId);
+                if(!projectById.isPresent())
+                    throw new CorporateException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+                projectEntity = projectById.get();
+                userEntities = userRepository.searchUserForProject(corporateId, keyword);
+                log.info("Execute method searchUser : 2");
+            } else {
+                userEntities = userRepository.searchUser(keyword);
+                log.info("Execute method searchUser : 3");
+            }
+            log.info("Execute method searchUser : 4 : " + userEntities.size());
             for (UserEntity userEntity : userEntities) {
+                log.info("Execute method searchUser : 5");
+                boolean projectMember = false;
                 Optional<CorporateEmployeeEntity> corporateEmployeeOption =
                         corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
                                 userEntity,
                                 corporateById.get(),
                                 CorporateAccessStatusType.ACTIVE
                         );
+                log.info("Execute method searchUser : 6 : " + userEntity.toString());
+                log.info("Execute method searchUser : 6x : " + corporateEmployeeOption.isPresent());
+                if(projectId!=0) {
+                    Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity = projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(projectEntity, corporateEmployeeOption.get());
+                    projectMember = byProjectEntityAndCorporateEmployeeEntity.isPresent();
+                }
+                log.info("Execute method searchUser : 7");
                 userSearchList.add(
                         new GetUserSearchResponseDTO(
                                 userEntity.getId(),
@@ -205,9 +230,10 @@ public class UserServiceImpl implements UserService {
                                 userEntity.getEmail(),
                                 userEntity.getCreatedDate(),
                                 userEntity.getStatusType(),
-                                corporateEmployeeOption.isPresent()?true:false
+                                projectId==0?corporateEmployeeOption.isPresent()?true:false:projectMember
                         )
                 );
+                log.info("Execute method searchUser : 8");
             }
             return userSearchList;
         } catch (Exception e) {
