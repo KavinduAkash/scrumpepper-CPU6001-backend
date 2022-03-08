@@ -11,6 +11,7 @@
 	<groupId>com.swlc</groupId>
 	<artifactId>ScrumPepperCPU6001</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
 	<name>ScrumPepperCPU6001</name>
 	<description>Scrum Pepper scrum-based project management tool</description>
 	<properties>
