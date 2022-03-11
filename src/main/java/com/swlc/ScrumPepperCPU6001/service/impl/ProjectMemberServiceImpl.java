@@ -37,18 +37,20 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     private final ProjectMemberRepository projectMemberRepository;
     private final ProjectTaskRepository projectTaskRepository;
     private final ProjectTaskAssignsRepository projectTaskAssignsRepository;
+    private final UserRepository userRepository;
     @Autowired
     private TokenValidator tokenValidator;
 
     public ProjectMemberServiceImpl(CorporateRepository corporateRepository,
                                     CorporateEmployeeRepository corporateEmployeeRepository,
-                                    ProjectRepository projectRepository, ProjectMemberRepository projectMemberRepository, ProjectTaskRepository projectTaskRepository, ProjectTaskAssignsRepository projectTaskAssignsRepository) {
+                                    ProjectRepository projectRepository, ProjectMemberRepository projectMemberRepository, ProjectTaskRepository projectTaskRepository, ProjectTaskAssignsRepository projectTaskAssignsRepository, UserRepository userRepository) {
         this.corporateRepository = corporateRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
         this.projectRepository = projectRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.projectTaskRepository = projectTaskRepository;
         this.projectTaskAssignsRepository = projectTaskAssignsRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -95,6 +97,73 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
             Optional<CorporateEmployeeEntity> corporateEmployeeById =
                     corporateEmployeeRepository.findById(addProjectMemberDTO.getCorporateEmployeeId());
+            if(!corporateEmployeeById.isPresent())
+                throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate employee not found");
+            projectMemberRepository.save(
+                    new ProjectMemberEntity(
+                            projectEntity,
+                            corporateEmployeeById.get(),
+                            new Date(),
+                            new Date(),
+                            auth_user_admin.get(),
+                            auth_user_admin.get(),
+                            addProjectMemberDTO.getScrumRole(),
+                            ProjectMemberStatusType.ACTIVE
+                    )
+            );
+            return true;
+        } catch (Exception e) {
+            log.error("Method addProjectMembers : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean addProjectMembersAsUser(AddProjectMemberDTO addProjectMemberDTO) {
+        log.info("Execute method addProjectMembers : addProjectMemberDTO : " + addProjectMemberDTO.toString());
+        try {
+            Optional<ProjectEntity> projectById = projectRepository.findById(addProjectMemberDTO.getProjectId());
+            if(!projectById.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+            ProjectEntity projectEntity = projectById.get();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN))) {
+                Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                        projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                                projectEntity,
+                                auth_user_admin.get()
+                        );
+                if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+                ProjectMemberEntity projectMemberEntity = byProjectEntityAndCorporateEmployeeEntity.get();
+                if(!(projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER) ||
+                        projectMemberEntity.getScrumRole().equals(ScrumRoles.PRODUCT_OWNER)))
+                    throw new CorporateException(
+                            ApplicationConstant.UN_AUTH_ACTION,
+                            "Unauthorized action. You can't processed this action"
+                    );
+            }
+            Optional<UserEntity> byId = userRepository.findById(addProjectMemberDTO.getCorporateEmployeeId());
+            if(byId.isPresent())
+                throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate employee not found");
+            Optional<CorporateEmployeeEntity> corporateEmployeeById =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(byId.get(), corporateEntity, CorporateAccessStatusType.ACTIVE);
             if(!corporateEmployeeById.isPresent())
                 throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate employee not found");
             projectMemberRepository.save(

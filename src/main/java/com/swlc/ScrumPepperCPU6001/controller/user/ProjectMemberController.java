@@ -39,6 +39,15 @@ public class ProjectMemberController {
         );
     }
 
+    @PatchMapping(value = "/add/user", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity addProjectMemberAsUser(@RequestBody AddProjectMemberDTO addProjectMemberDTO) {
+        boolean b = projectMemberService.addProjectMembers(addProjectMemberDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project member added successfully", null),
+                HttpStatus.OK
+        );
+    }
+
     @PatchMapping(value = "/update", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateProjectMember(@RequestBody UpdateProjectMemberDTO updateProjectMemberDTO) {
         boolean b = projectMemberService.updateProjectMember(updateProjectMemberDTO);

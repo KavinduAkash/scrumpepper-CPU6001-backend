@@ -13,6 +13,7 @@ import java.util.List;
  */
 public interface ProjectMemberService {
     boolean addProjectMembers(AddProjectMemberDTO addProjectMemberDTO);
+    boolean addProjectMembersAsUser(AddProjectMemberDTO addProjectMemberDTO);
     boolean updateProjectMember(UpdateProjectMemberDTO updateProjectMemberDTO);
     boolean removeProjectMember(long projectMemberId);
     List<CorporateEmployeeDTO> getProjectMember(long projectMemberId);
