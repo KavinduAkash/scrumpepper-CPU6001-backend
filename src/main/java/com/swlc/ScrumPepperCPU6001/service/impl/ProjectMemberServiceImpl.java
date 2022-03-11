@@ -160,7 +160,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
                     );
             }
             Optional<UserEntity> byId = userRepository.findById(addProjectMemberDTO.getCorporateEmployeeId());
-            if(byId.isPresent())
+            if(!byId.isPresent())
                 throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND, "Corporate employee not found");
             Optional<CorporateEmployeeEntity> corporateEmployeeById =
                     corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(byId.get(), corporateEntity, CorporateAccessStatusType.ACTIVE);

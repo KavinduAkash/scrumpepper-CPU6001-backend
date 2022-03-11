@@ -41,7 +41,7 @@ public class ProjectMemberController {
 
     @PatchMapping(value = "/add/user", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addProjectMemberAsUser(@RequestBody AddProjectMemberDTO addProjectMemberDTO) {
-        boolean b = projectMemberService.addProjectMembers(addProjectMemberDTO);
+        boolean b = projectMemberService.addProjectMembersAsUser(addProjectMemberDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Project member added successfully", null),
                 HttpStatus.OK
