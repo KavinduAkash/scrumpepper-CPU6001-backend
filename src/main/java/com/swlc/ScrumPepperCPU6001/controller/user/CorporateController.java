@@ -36,8 +36,8 @@ public class CorporateController {
         );
     }
 
-    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity createCorporate(@ModelAttribute UpdateCorporateRequestDTO updateCorporateRequestDTO) {
+    @PutMapping(value = "/update", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity createCorporate(@RequestBody UpdateCorporateRequestDTO updateCorporateRequestDTO) {
         boolean result = corporateService.updateCorporate(updateCorporateRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your corporate account updated successfully", null),

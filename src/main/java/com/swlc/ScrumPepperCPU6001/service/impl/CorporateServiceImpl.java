@@ -51,7 +51,9 @@ public class CorporateServiceImpl implements CorporateService {
     @Autowired
     private FileWriter fileWriter;
 
-    public CorporateServiceImpl(CorporateRepository corporateRepository, CorporateEmployeeRepository corporateEmployeeRepository, ProjectRepository projectRepository, ProjectMemberRepository projectMemberRepository) {
+    public CorporateServiceImpl(CorporateRepository corporateRepository,
+                                CorporateEmployeeRepository corporateEmployeeRepository, ProjectRepository projectRepository,
+                                ProjectMemberRepository projectMemberRepository) {
         this.corporateRepository = corporateRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
         this.projectRepository = projectRepository;
