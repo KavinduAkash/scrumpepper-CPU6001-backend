@@ -256,4 +256,47 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
             throw e;
         }
     }
+
+    @Override
+    public boolean removeCorporateEmployee(long id, long corporateId) {
+        log.info("Execute method removeCorporateEmployee : ");
+        try {
+            Optional<CorporateEntity> corporateById = corporateRepository.findById(corporateId);
+            if(!corporateById.isPresent())
+                throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND,
+                        "Corporate account not found");
+            CorporateEntity corporateEntity = corporateById.get();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin = corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                    userAdminEntity,
+                    corporateEntity,
+                    CorporateAccessStatusType.ACTIVE
+            );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            CorporateEmployeeEntity corporateEmployeeAdminEntity = auth_user_admin.get();
+            if(!(corporateEmployeeAdminEntity.getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    corporateEmployeeAdminEntity.getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN)))
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            Optional<CorporateEmployeeEntity> byIdAndCorporateEntity = corporateEmployeeRepository.findByIdAndCorporateEntity(id, corporateEntity);
+            if(!byIdAndCorporateEntity.isPresent())
+                throw new CorporateEmployeeException(
+                        ApplicationConstant.RESOURCE_NOT_FOUND,
+                        "Corporate member not found"
+                );
+            CorporateEmployeeEntity corporateEmployeeEntity = byIdAndCorporateEntity.get();
+            corporateEmployeeEntity.setStatusType(CorporateAccessStatusType.DELETE);
+            corporateEmployeeRepository.save(corporateEmployeeEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method removeCorporateEmployee : " + e.getMessage(), e);
+            throw e;
+        }
+    }
 }

@@ -16,4 +16,5 @@ public interface CorporateEmployeeService {
     boolean approveRejectCorporateEmployeeInvitation(ApproveRejectInvitationRequestDTO approveRejectInvitationRequestDTO);
     List<CorporateEmployeeDTO> searchCorporateEmployee(SearchEmployeeRequestDTO searchEmployeeRequestDTO);
     List<InvitationsResponseDTO> getInvitations();
+    boolean removeCorporateEmployee(long id, long corporateId);
 }

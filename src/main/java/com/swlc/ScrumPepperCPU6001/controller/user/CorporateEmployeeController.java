@@ -38,6 +38,15 @@ public class CorporateEmployeeController {
         );
     }
 
+    @PostMapping(value = "/remove", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity createCorporate(@RequestParam("id") long id, @RequestParam("corporate") long corporate) {
+        boolean b = corporateEmployeeService.removeCorporateEmployee(id, corporate);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Your corporate employee added successfully", null),
+                HttpStatus.OK
+        );
+    }
+
     @PostMapping(value = "/approve", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity approveRejectCorporateEmployeeInvitations(@RequestBody ApproveRejectInvitationRequestDTO approveRejectInvitationRequestDTO) {
         boolean b = corporateEmployeeService.approveRejectCorporateEmployeeInvitation(approveRejectInvitationRequestDTO);
