@@ -3,6 +3,7 @@ package com.swlc.ScrumPepperCPU6001.controller.user;
 import com.swlc.ScrumPepperCPU6001.dto.SprintVelocityDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.BurnDownChartResponseDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.MemberResponsibilityDTO;
 import com.swlc.ScrumPepperCPU6001.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,15 @@ public class ReportController {
         List<SprintVelocityDTO> result = reportService.getSprintVelocity(projectId);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "SPPoker Rooms found successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/team-performance/{sprintId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getTeamPerformance(@PathVariable long sprintId) {
+        List<MemberResponsibilityDTO> result = reportService.getTeamPerformance(sprintId);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "", result),
                 HttpStatus.OK
         );
     }

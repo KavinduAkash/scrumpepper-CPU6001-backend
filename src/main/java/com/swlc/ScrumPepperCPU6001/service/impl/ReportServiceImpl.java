@@ -1,14 +1,14 @@
 package com.swlc.ScrumPepperCPU6001.service.impl;
 
 import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
-import com.swlc.ScrumPepperCPU6001.dto.BurnDownDataDTO;
-import com.swlc.ScrumPepperCPU6001.dto.SprintDTO;
-import com.swlc.ScrumPepperCPU6001.dto.SprintVelocityDTO;
+import com.swlc.ScrumPepperCPU6001.dto.*;
 import com.swlc.ScrumPepperCPU6001.dto.response.BurnDownChartResponseDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.MemberResponsibilityDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
 import com.swlc.ScrumPepperCPU6001.enums.SprintStatusType;
+import com.swlc.ScrumPepperCPU6001.enums.StatusType;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
 import com.swlc.ScrumPepperCPU6001.repository.*;
@@ -42,12 +42,13 @@ public class ReportServiceImpl implements ReportService {
     private final SprintRepository sprintRepository;
     private final ProjectSprintUserStoryRepository sprintUserStoryRepository;
     private final UserStoryTrackRepository userStoryTrackRepository;
+    private final ProjectTaskAssignsRepository projectTaskAssignsRepository;
 
     public ReportServiceImpl(CorporateRepository corporateRepository,
                              CorporateEmployeeRepository corporateEmployeeRepository,
                              ProjectRepository projectRepository,
                              ProjectMemberRepository projectMemberRepository, SprintRepository sprintRepository,
-                             ProjectSprintUserStoryRepository sprintUserStoryRepository, UserStoryTrackRepository userStoryTrackRepository) {
+                             ProjectSprintUserStoryRepository sprintUserStoryRepository, UserStoryTrackRepository userStoryTrackRepository, ProjectTaskAssignsRepository projectTaskAssignsRepository) {
         this.corporateRepository = corporateRepository;
         this.corporateEmployeeRepository = corporateEmployeeRepository;
         this.projectRepository = projectRepository;
@@ -55,6 +56,7 @@ public class ReportServiceImpl implements ReportService {
         this.sprintRepository = sprintRepository;
         this.sprintUserStoryRepository = sprintUserStoryRepository;
         this.userStoryTrackRepository = userStoryTrackRepository;
+        this.projectTaskAssignsRepository = projectTaskAssignsRepository;
     }
 
     @Override
@@ -250,6 +252,92 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+    @Override
+    public List<MemberResponsibilityDTO> getTeamPerformance(long sprintId) {
+        log.info("Execute method getTeamPerformance: @Param{} " + sprintId);
+        List<MemberResponsibilityDTO> result = new ArrayList<>();
+        try {
+            // check sprint
+            Optional<ProjectSprintEntity> sprintById = sprintRepository.findById(sprintId);
+            if(!sprintById.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Sprint not found");
+
+            // check auth
+//            authProject(sprintById.get().getProjectEntity(), 1);
+
+            ProjectEntity projectEntity = sprintById.get().getProjectEntity();
+
+            List<ProjectMemberEntity> projectMembers = projectMemberRepository.findByProjectEntity(projectEntity);
+
+            int projectPointCount = sprintUserStoryRepository.getProjectPointCount(sprintById.get());
+
+            for (ProjectMemberEntity projectMember : projectMembers) {
+                int totalPoints = 0;
+                List<ProjectUserStoryEntity> byProjectMemberEntityAndStatusType =
+                        projectTaskAssignsRepository.getByProjectMemberEntityAndStatusType(
+                                sprintById.get(),
+                                projectMember,
+                                StatusType.ACTIVE
+                        );
+
+                log.info("----------- JJJJJJJJJ: " + projectMember.getCorporateEmployeeEntity().getUserEntity().getFirstName());
+                log.info("JJJJJJJJJ: " + byProjectMemberEntityAndStatusType.size());
+
+                List<UserStoryDTO> userStoryDTOList = new ArrayList<>();
+                for (ProjectUserStoryEntity userStoryEntity : byProjectMemberEntityAndStatusType) {
+                    int points = userStoryEntity.getPoints();
+                    totalPoints = totalPoints + points;
+                    userStoryDTOList.add(
+                            new UserStoryDTO(
+                                userStoryEntity.getId(),
+                                null,
+                                userStoryEntity.getTitle(),
+                                userStoryEntity.getDescription(),
+                                userStoryEntity.getCreatedDate(),
+                                userStoryEntity.getModifiedDate(),
+                                null,
+                                null,
+                                userStoryEntity.getStatusType(),
+                                new ArrayList<>(),
+                                userStoryEntity.getPriority(),
+                                new ArrayList<>(),
+                                new ArrayList<>(),
+                                null,
+                                userStoryEntity.getPoints()
+                            )
+                    );
+
+                }
+
+                int responsibility = (totalPoints * projectPointCount) / 100;
+
+                result.add(
+                        new MemberResponsibilityDTO(
+                                new ProjectMemberDTO(
+                                        projectMember.getId(),
+                                        this.prepareCorporateEmployeeDTO(
+                                                projectMember.getCorporateEmployeeEntity()
+                                        ),
+                                        projectMember.getAssignedDate(),
+                                        projectMember.getModifiedDate(),
+                                        projectMember.getScrumRole(),
+                                        projectMember.getStatusType()
+                                ),
+                                responsibility,
+                                0,
+                                totalPoints,
+                                projectPointCount
+                        )
+                );
+            }
+
+            return result;
+        } catch (Exception e) {
+            log.error("Method getTeamPerformance: " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
     private boolean authProject(ProjectEntity projectEntity, int level) {
         log.info("Execute method authProject: @Param{} " + projectEntity.toString());
         try {
@@ -295,6 +383,35 @@ public class ReportServiceImpl implements ReportService {
                     save.getStatusType()
             );
         } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    private CorporateEmployeeDTO prepareCorporateEmployeeDTO(CorporateEmployeeEntity c) {
+//        log.info("Execute method prepareCorporateEmployeeDTO : @Param {} " + c);
+        try {
+            return new CorporateEmployeeDTO(
+                    c.getId(),
+                    new UserDTO(
+                            c.getUserEntity().getId(),
+                            c.getUserEntity().getRefNo(),
+                            c.getUserEntity().getFirstName(),
+                            c.getUserEntity().getLastName(),
+                            c.getUserEntity().getContactNumber(),
+                            c.getUserEntity().getEmail(),
+                            null,
+                            c.getUserEntity().getCreatedDate(),
+                            c.getUserEntity().getStatusType()
+                    ),
+                    null,
+                    c.getCorporateAccessType(),
+                    c.getCreatedDate(),
+                    c.getModifiedDate(),
+                    c.getAcceptedDate(),
+                    c.getStatusType()
+            );
+        } catch (Exception e) {
+            log.error("Method prepareUserStoryDTO : " + e.getMessage(), e);
             throw e;
         }
     }

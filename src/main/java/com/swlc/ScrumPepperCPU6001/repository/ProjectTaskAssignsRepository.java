@@ -29,4 +29,7 @@ public interface ProjectTaskAssignsRepository extends JpaRepository<ProjectTaskA
     List<CorporateEmployeeEntity> getTaskNotAssignsProjectCorporateEmployees(@Param("cstatus") CorporateAccessStatusType statusType,  @Param("corporate")CorporateEntity corporateEntity, @Param("project") ProjectEntity projectEntity, @Param("pmstatus")ProjectMemberStatusType tassignstatus);
 
     Optional<ProjectTaskAssignsEntity> findByProjectTaskEntityAndProjectMemberEntity(ProjectTaskEntity projectTaskEntity, ProjectMemberEntity projectMemberEntity);
+
+    @Query("SELECT t.projectTaskEntity.projectUserStoryEntity FROM ProjectTaskAssignsEntity t, ProjectSprintUserStoryEntity su WHERE t.projectTaskEntity.projectUserStoryEntity = su.projectUserStoryEntity AND su.projectSprintEntity=:sprint AND t.projectMemberEntity=:member AND t.statusType=:tsstatus")
+    List<ProjectUserStoryEntity> getByProjectMemberEntityAndStatusType(@Param("sprint") ProjectSprintEntity sprintEntity , @Param("member") ProjectMemberEntity projectMemberEntity, @Param("tsstatus") StatusType statusType);
 }

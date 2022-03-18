@@ -139,6 +139,7 @@ public class TasksServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public TaskDTO addMemberToTask(long taskId, long id) {
         log.info("Execute method addMemberToTask : id : " + id);
         try {
