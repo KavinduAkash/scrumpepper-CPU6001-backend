@@ -6,10 +6,7 @@ import com.swlc.ScrumPepperCPU6001.dto.response.BurnDownChartResponseDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.MemberResponsibilityDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.UserStoryResponsibilityDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
-import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
-import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
-import com.swlc.ScrumPepperCPU6001.enums.SprintStatusType;
-import com.swlc.ScrumPepperCPU6001.enums.StatusType;
+import com.swlc.ScrumPepperCPU6001.enums.*;
 import com.swlc.ScrumPepperCPU6001.exception.CorporateException;
 import com.swlc.ScrumPepperCPU6001.exception.ProjectException;
 import com.swlc.ScrumPepperCPU6001.repository.*;
@@ -274,13 +271,22 @@ public class ReportServiceImpl implements ReportService {
 
             for (ProjectMemberEntity projectMember : projectMembers) {
                 int totalPoints = 0;
+                int doneTotalPoints = 0;
 
                 List<ProjectUserStoryEntity> byProjectMemberEntityAndStatusType =
                         projectTaskAssignsRepository.getByProjectMemberEntityAndStatusType(
                                 sprintById.get(),
                                 projectMember,
-                                StatusType.ACTIVE
+                                SprintUserStoryStatus.DELETED
                         );
+
+
+                List<ProjectUserStoryEntity> byCompleteProjectMemberEntityAndStatusType = projectTaskAssignsRepository.getByCompleteProjectMemberEntityAndStatusType(
+                        sprintById.get(),
+                        projectMember,
+                        SprintUserStoryStatus.ACTIVE,
+                        UserStoryStatusType.COMPLETED
+                );
 
                 List<UserStoryResponsibilityDTO> userStoryDTOList = new ArrayList<>();
                 for (ProjectUserStoryEntity userStoryEntity : byProjectMemberEntityAndStatusType) {
@@ -314,6 +320,13 @@ public class ReportServiceImpl implements ReportService {
 
                 int responsibility = (totalPoints * projectPointCount) / 100;
 
+                for (ProjectUserStoryEntity userStoryEntity  : byCompleteProjectMemberEntityAndStatusType) {
+                    int points = userStoryEntity.getPoints();
+                    doneTotalPoints = doneTotalPoints + points;
+                }
+
+                int doneResponsibility = (doneTotalPoints * projectPointCount) / 100;
+
                 result.add(
                         new MemberResponsibilityDTO(
                                 new ProjectMemberDTO(
@@ -326,8 +339,8 @@ public class ReportServiceImpl implements ReportService {
                                         projectMember.getScrumRole(),
                                         projectMember.getStatusType()
                                 ),
+                                doneResponsibility,
                                 responsibility,
-                                0,
                                 totalPoints,
                                 projectPointCount,
                                 userStoryDTOList
