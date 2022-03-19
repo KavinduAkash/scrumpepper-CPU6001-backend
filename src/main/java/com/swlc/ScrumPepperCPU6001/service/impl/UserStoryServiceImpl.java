@@ -423,13 +423,14 @@ public class UserStoryServiceImpl implements UserStoryService {
             List<ProjectSprintUserStoryEntity> sprintUserStoryEntities = projectSprintUserStoryRepository.getByLatestSprintUserStoryRecord(userStoryEntity.getId());
             List<ProjectSprintEntity> otherSprints = new ArrayList<>();
             SprintDTO currentSprint = null;
+            log.info("XXXXXXXXXXXXXXXX: " + sprintUserStoryEntities.size());
             if(!sprintUserStoryEntities.isEmpty()) {
                 ProjectSprintUserStoryEntity projectSprintUserStoryEntity = sprintUserStoryEntities.get(0);
                 SprintDTO sprintDTO = new SprintDTO();
                 sprintDTO.setId(projectSprintUserStoryEntity.getProjectSprintEntity().getId());
                 sprintDTO.setSprintName(projectSprintUserStoryEntity.getProjectSprintEntity().getSprintName());
                 currentSprint = sprintDTO;
-                otherSprints = sprintRepository.getOtherSprints(projectSprintUserStoryEntity.getProjectSprintEntity());
+                otherSprints = sprintRepository.getOtherSprints(projectSprintUserStoryEntity.getProjectSprintEntity(), userStoryEntity.getProjectEntity());
             } else {
                 otherSprints = sprintRepository.findByProjectEntity(userStoryEntity.getProjectEntity());
             }

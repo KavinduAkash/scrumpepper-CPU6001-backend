@@ -6,6 +6,7 @@ import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.GetTaskEmployeeDTO;
+import com.swlc.ScrumPepperCPU6001.enums.ScrumRoles;
 import com.swlc.ScrumPepperCPU6001.service.ProjectMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -87,6 +88,15 @@ public class ProjectMemberController {
     @GetMapping(value = "/get-team", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getProjectTeam(@RequestParam("id") long projectId) {
         List<ProjectMemberDTO> result = projectMemberService.getProjectTeam(projectId);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Project team found successfully", result),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getProjectMyRole(@RequestParam("id") long projectId) {
+        ScrumRoles result = projectMemberService.getProjectMyRole(projectId);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Project team found successfully", result),
                 HttpStatus.OK

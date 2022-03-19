@@ -4,6 +4,7 @@ import com.swlc.ScrumPepperCPU6001.constant.ApplicationConstant;
 import com.swlc.ScrumPepperCPU6001.dto.*;
 import com.swlc.ScrumPepperCPU6001.dto.response.BurnDownChartResponseDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.MemberResponsibilityDTO;
+import com.swlc.ScrumPepperCPU6001.dto.response.UserStoryResponsibilityDTO;
 import com.swlc.ScrumPepperCPU6001.entity.*;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessStatusType;
 import com.swlc.ScrumPepperCPU6001.enums.CorporateAccessType;
@@ -273,6 +274,7 @@ public class ReportServiceImpl implements ReportService {
 
             for (ProjectMemberEntity projectMember : projectMembers) {
                 int totalPoints = 0;
+
                 List<ProjectUserStoryEntity> byProjectMemberEntityAndStatusType =
                         projectTaskAssignsRepository.getByProjectMemberEntityAndStatusType(
                                 sprintById.get(),
@@ -280,30 +282,31 @@ public class ReportServiceImpl implements ReportService {
                                 StatusType.ACTIVE
                         );
 
-                log.info("----------- JJJJJJJJJ: " + projectMember.getCorporateEmployeeEntity().getUserEntity().getFirstName());
-                log.info("JJJJJJJJJ: " + byProjectMemberEntityAndStatusType.size());
-
-                List<UserStoryDTO> userStoryDTOList = new ArrayList<>();
+                List<UserStoryResponsibilityDTO> userStoryDTOList = new ArrayList<>();
                 for (ProjectUserStoryEntity userStoryEntity : byProjectMemberEntityAndStatusType) {
                     int points = userStoryEntity.getPoints();
                     totalPoints = totalPoints + points;
+                    double responsibility = (points * projectPointCount) / 100;
                     userStoryDTOList.add(
-                            new UserStoryDTO(
-                                userStoryEntity.getId(),
-                                null,
-                                userStoryEntity.getTitle(),
-                                userStoryEntity.getDescription(),
-                                userStoryEntity.getCreatedDate(),
-                                userStoryEntity.getModifiedDate(),
-                                null,
-                                null,
-                                userStoryEntity.getStatusType(),
-                                new ArrayList<>(),
-                                userStoryEntity.getPriority(),
-                                new ArrayList<>(),
-                                new ArrayList<>(),
-                                null,
-                                userStoryEntity.getPoints()
+                            new UserStoryResponsibilityDTO(
+                                new UserStoryDTO(
+                                    userStoryEntity.getId(),
+                                    null,
+                                    userStoryEntity.getTitle(),
+                                    userStoryEntity.getDescription(),
+                                    userStoryEntity.getCreatedDate(),
+                                    userStoryEntity.getModifiedDate(),
+                                    null,
+                                    null,
+                                    userStoryEntity.getStatusType(),
+                                    new ArrayList<>(),
+                                    userStoryEntity.getPriority(),
+                                    new ArrayList<>(),
+                                    new ArrayList<>(),
+                                    null,
+                                    userStoryEntity.getPoints()
+                                ),
+                                 responsibility
                             )
                     );
 
@@ -326,7 +329,8 @@ public class ReportServiceImpl implements ReportService {
                                 responsibility,
                                 0,
                                 totalPoints,
-                                projectPointCount
+                                projectPointCount,
+                                userStoryDTOList
                         )
                 );
             }

@@ -444,7 +444,7 @@ public class TasksServiceImpl implements TaskService {
                 sprintDTO.setId(projectSprintUserStoryEntity.getProjectSprintEntity().getId());
                 sprintDTO.setSprintName(projectSprintUserStoryEntity.getProjectSprintEntity().getSprintName());
                 currentSprint = sprintDTO;
-                otherSprints = sprintRepository.getOtherSprints(projectSprintUserStoryEntity.getProjectSprintEntity());
+                otherSprints = sprintRepository.getOtherSprints(projectSprintUserStoryEntity.getProjectSprintEntity(), userStoryEntity.getProjectEntity());
             } else {
                 otherSprints = sprintRepository.findByProjectEntity(userStoryEntity.getProjectEntity());
             }

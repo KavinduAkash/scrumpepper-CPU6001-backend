@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * @author hp
  */
@@ -20,4 +22,5 @@ public class MemberResponsibilityDTO {
     private int totalResponsibility;
     private int points;
     private int totalPoints;
+    private List<UserStoryResponsibilityDTO> userStories;
 }

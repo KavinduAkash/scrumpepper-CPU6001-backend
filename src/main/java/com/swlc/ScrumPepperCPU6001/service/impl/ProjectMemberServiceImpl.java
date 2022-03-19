@@ -396,6 +396,51 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         }
     }
 
+    @Override
+    public ScrumRoles getProjectMyRole(long projectId) {
+        log.info("Execute method getProjectMyRole : project-id " + projectId);
+        try {
+            Optional<ProjectEntity> byId = projectRepository.findById(projectId);
+            if(!byId.isPresent())
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Project not found");
+
+            CorporateEntity corporateEntity = byId.get().getCorporateEntity();
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin =
+                    corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                            userAdminEntity,
+                            corporateEntity,
+                            CorporateAccessStatusType.ACTIVE
+                    );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+//            if(!(auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+//                    auth_user_admin.get().getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN)))
+//                throw new CorporateException(
+//                        ApplicationConstant.UN_AUTH_ACTION,
+//                        "Unauthorized action. You can't processed this action"
+//                );
+            Optional<ProjectMemberEntity> byProjectEntityAndCorporateEmployeeEntity =
+                    projectMemberRepository.findByProjectEntityAndCorporateEmployeeEntity(
+                            byId.get(),
+                            auth_user_admin.get()
+                    );
+            if(!byProjectEntityAndCorporateEmployeeEntity.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            ProjectMemberEntity authProjectMemberEntity = byProjectEntityAndCorporateEmployeeEntity.get();
+            return authProjectMemberEntity.getScrumRole();
+        } catch (Exception e) {
+            log.error("Method getProjectMyRole : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
     private List<CorporateEmployeeDTO> prepareCorporateEmployeeDTOList(List<CorporateEmployeeEntity> corporateEmployeeEntities) {
         try {
             List<CorporateEmployeeDTO> corporateEmployeeDTOS =  new ArrayList<>();

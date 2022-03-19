@@ -16,8 +16,8 @@ import java.util.Optional;
 public interface SprintRepository extends JpaRepository<ProjectSprintEntity, Long> {
     Optional<ProjectSprintEntity> findByProjectEntityAndSprintName(ProjectEntity projectEntity, String sprintName);
     List<ProjectSprintEntity> findByProjectEntity(ProjectEntity projectEntity);
-    @Query("SELECT s FROM ProjectSprintEntity s WHERE s<>:sprint")
-    List<ProjectSprintEntity> getOtherSprints(@Param("sprint") ProjectSprintEntity sprintEntity);
+    @Query("SELECT s FROM ProjectSprintEntity s WHERE s<>:sprint AND s.projectEntity=:project")
+    List<ProjectSprintEntity> getOtherSprints(@Param("sprint") ProjectSprintEntity sprintEntity, @Param("project") ProjectEntity projectEntity);
     @Query("SELECT s FROM ProjectSprintEntity s WHERE s.projectEntity=:project AND s.statusType<>:st")
     List<ProjectSprintEntity> getActiveSprints(@Param("project")ProjectEntity projectEntity, @Param("st")SprintStatusType statusType);
 }

@@ -491,6 +491,37 @@ public class SprintServiceImpl implements SprintService {
         }
     }
 
+    @Override
+    public boolean endSprint(long sprintId) {
+        log.info("Execute method endSprint : ");
+        try {
+            // user find
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            // sprint find
+            Optional<ProjectSprintEntity> sprintById = sprintRepository.findById(sprintId);
+            if(!sprintById.isPresent()) throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Sprint not found");
+            // validate user with sprint
+            ProjectSprintEntity projectSprintEntity = sprintById.get();
+            ProjectEntity projectEntity = projectSprintEntity.getProjectEntity();
+            CorporateEntity corporateEntity = projectEntity.getCorporateEntity();
+            validateSprintUser(userAdminEntity, corporateEntity, projectEntity);
+            // check sprint start or not
+            SprintStatusType statusType = projectSprintEntity.getStatusType();
+           if(statusType.equals(SprintStatusType.COMPLETED)) {
+                throw new ProjectException(ApplicationConstant.ALREADY_COMPLETED, "Sprint already completed");
+            } else if(statusType.equals(SprintStatusType.DELETE)) {
+                throw new ProjectException(ApplicationConstant.RESOURCE_NOT_FOUND, "Sprint not found");
+            }
+            // if not start, start the sprint
+            projectSprintEntity.setStatusType(SprintStatusType.COMPLETED);
+            sprintRepository.save(projectSprintEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("Method endSprint : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
     private boolean validateSprintUser(UserEntity userAdminEntity, CorporateEntity corporateEntity, ProjectEntity projectEntity) {
         log.info("Execute method validateSprintUser : ");
         try {

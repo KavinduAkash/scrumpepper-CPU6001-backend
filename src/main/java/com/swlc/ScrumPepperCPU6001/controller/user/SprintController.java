@@ -64,4 +64,14 @@ public class SprintController {
                 HttpStatus.OK
         );
     }
+
+// ------------------------------------------------ Sprint Management --------------------------------------------------
+    @PatchMapping(value = "/end", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity endSprint(@RequestParam("id") long sprintId) {
+        boolean result = sprintService.endSprint(sprintId);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Sprint end successfully", null),
+                HttpStatus.OK
+        );
+    }
 }

@@ -5,6 +5,7 @@ import com.swlc.ScrumPepperCPU6001.dto.ProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.UpdateProjectMemberDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.GetTaskEmployeeDTO;
+import com.swlc.ScrumPepperCPU6001.enums.ScrumRoles;
 
 import java.util.List;
 
@@ -19,4 +20,5 @@ public interface ProjectMemberService {
     List<CorporateEmployeeDTO> getProjectMember(long projectMemberId);
     GetTaskEmployeeDTO getTaskMembers(long taskId);
     List<ProjectMemberDTO> getProjectTeam(long projectId);
+    ScrumRoles getProjectMyRole(long projectId);
 }
