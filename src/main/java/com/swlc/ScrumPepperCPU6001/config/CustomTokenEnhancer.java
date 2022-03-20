@@ -42,11 +42,14 @@ public class CustomTokenEnhancer extends JwtAccessTokenConverter {
         UsernamePasswordAuthenticationToken authentication =
                 (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
 
-        if (user.getUsername().equals(OAuth2Constant.ADMIN_CLIENT_ID)) {
+        User account = (User) authentication.getPrincipal();
+
+        if (account.getUsername().equals(OAuth2Constant.ADMIN_CLIENT_ID)) {
             AdminDTO adminDetailsByUserName = adminService.getAdminDetailsByUserName(user.getUsername());
             additionalInfo.put("user", adminDetailsByUserName);
             additionalInfo.put("user_id", adminDetailsByUserName.getId());
         } else {
+            System.out.println("ccccccccccccccccccccccccccccccccc");
             UserDTO userDetailsByEmail = userService.getUserDetailsByEmail(user.getUsername());
             additionalInfo.put("user", userDetailsByEmail);
             additionalInfo.put("user_id", userDetailsByEmail.getId());
