@@ -4,6 +4,7 @@ import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.ApproveRejectInvitationRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.SearchEmployeeRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.InvitationsResponseDTO;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 public interface CorporateEmployeeService {
     boolean addCorporateEmployee(AddCorporateEmployeeRequestDTO addCorporateEmployeeRequestDTO);
+    boolean updateCorporateEmployee(UpdateCorporateEmployeeRequestDTO updateCorporateEmployeeRequestDTO);
     boolean approveRejectCorporateEmployeeInvitation(ApproveRejectInvitationRequestDTO approveRejectInvitationRequestDTO);
     List<CorporateEmployeeDTO> searchCorporateEmployee(SearchEmployeeRequestDTO searchEmployeeRequestDTO);
     List<InvitationsResponseDTO> getInvitations();

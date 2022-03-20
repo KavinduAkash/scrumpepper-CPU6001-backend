@@ -8,6 +8,7 @@ import com.swlc.ScrumPepperCPU6001.dto.UserDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.ApproveRejectInvitationRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.request.SearchEmployeeRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.UpdateCorporateEmployeeRequestDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.InvitationsResponseDTO;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeEntity;
 import com.swlc.ScrumPepperCPU6001.entity.CorporateEmployeeInvitationEntity;
@@ -133,6 +134,47 @@ public class CorporateEmployeeServiceImpl implements CorporateEmployeeService {
             return true;
         } catch (Exception e) {
             log.error("Method addCorporateEmployee : " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean updateCorporateEmployee(UpdateCorporateEmployeeRequestDTO updateCorporateEmployeeRequestDTO) {
+        try {
+
+            Optional<CorporateEmployeeEntity> byId = corporateEmployeeRepository.findById(updateCorporateEmployeeRequestDTO.getMemberId());
+            if(!byId.isPresent())
+                throw new CorporateEmployeeException(ApplicationConstant.RESOURCE_NOT_FOUND,
+                        "Corporate member not found");
+
+            CorporateEmployeeEntity corporateEmployeeEntity = byId.get();
+            CorporateEntity corporateEntity = corporateEmployeeEntity.getCorporateEntity();
+
+            UserEntity userAdminEntity = tokenValidator.retrieveUserInformationFromAuthentication();
+            Optional<CorporateEmployeeEntity> auth_user_admin = corporateEmployeeRepository.findByUserEntityAndCorporateEntityAndStatusType(
+                    userAdminEntity,
+                    corporateEntity,
+                    CorporateAccessStatusType.ACTIVE
+            );
+            if(!auth_user_admin.isPresent())
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+            CorporateEmployeeEntity corporateEmployeeAdminEntity = auth_user_admin.get();
+            if(!(corporateEmployeeAdminEntity.getCorporateAccessType().equals(CorporateAccessType.CORPORATE_SUPER) ||
+                    corporateEmployeeAdminEntity.getCorporateAccessType().equals(CorporateAccessType.CORPORATE_ADMIN)))
+                throw new CorporateException(
+                        ApplicationConstant.UN_AUTH_ACTION,
+                        "Unauthorized action. You can't processed this action"
+                );
+
+            corporateEmployeeEntity.setCorporateAccessType(updateCorporateEmployeeRequestDTO.getAccessType());
+            corporateEmployeeRepository.save(corporateEmployeeEntity);
+
+            return true;
+
+        } catch (Exception e) {
             throw e;
         }
     }

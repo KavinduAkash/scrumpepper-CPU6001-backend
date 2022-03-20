@@ -1,10 +1,7 @@
 package com.swlc.ScrumPepperCPU6001.controller.user;
 
 import com.swlc.ScrumPepperCPU6001.dto.CorporateEmployeeDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateEmployeeRequestDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.AddCorporateRequestDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.ApproveRejectInvitationRequestDTO;
-import com.swlc.ScrumPepperCPU6001.dto.request.SearchEmployeeRequestDTO;
+import com.swlc.ScrumPepperCPU6001.dto.request.*;
 import com.swlc.ScrumPepperCPU6001.dto.response.CommonResponseDTO;
 import com.swlc.ScrumPepperCPU6001.dto.response.InvitationsResponseDTO;
 import com.swlc.ScrumPepperCPU6001.service.CorporateEmployeeService;
@@ -34,6 +31,15 @@ public class CorporateEmployeeController {
         boolean b = corporateEmployeeService.addCorporateEmployee(addCorporateEmployeeRequestDTO);
         return new ResponseEntity<>(
                 new CommonResponseDTO(true, "Your corporate employee added successfully", null),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping(value = "/update", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity createCorporate(@RequestBody UpdateCorporateEmployeeRequestDTO updateCorporateEmployeeRequestDTO) {
+        boolean b = corporateEmployeeService.updateCorporateEmployee(updateCorporateEmployeeRequestDTO);
+        return new ResponseEntity<>(
+                new CommonResponseDTO(true, "Your corporate employee updated successfully", null),
                 HttpStatus.OK
         );
     }
